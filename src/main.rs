@@ -10,6 +10,7 @@ mod game;
 mod input;
 mod resources;
 mod scenes;
+mod spritesheet;
 mod types;
 mod util;
 mod world;
