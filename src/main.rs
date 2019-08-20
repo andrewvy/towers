@@ -6,11 +6,10 @@ use std::path;
 
 use ggez::{self, *};
 
-mod components;
+mod game;
 mod input;
 mod resources;
 mod scenes;
-mod systems;
 mod types;
 mod util;
 mod world;
@@ -24,7 +23,9 @@ impl MainState {
     fn new(ctx: &mut Context, resource_path: &path::Path) -> Self {
         let world = world::World::new(resource_path);
         let mut scenestack = scenes::Stack::new(ctx, world);
-        let initial_scene = Box::new(scenes::level::LevelScene::new(ctx, &mut scenestack.world));
+        let initial_scene = Box::new(scenes::menu::MenuScene::new(ctx, &mut scenestack.world));
+        let level_scene = Box::new(scenes::level::LevelScene::new(ctx, &mut scenestack.world));
+        scenestack.push(level_scene);
         scenestack.push(initial_scene);
 
         Self {
@@ -59,6 +60,7 @@ impl event::EventHandler for MainState {
         _repeat: bool,
     ) {
         if let Some(ev) = self.input_binding.resolve(keycode) {
+            self.scenes.world.input.update_effect(ev, true);
             self.scenes.input(ev, true);
         }
     }
@@ -70,6 +72,7 @@ impl event::EventHandler for MainState {
         _keymod: event::KeyMods,
     ) {
         if let Some(ev) = self.input_binding.resolve(keycode) {
+            self.scenes.world.input.update_effect(ev, false);
             self.scenes.input(ev, false);
         }
     }

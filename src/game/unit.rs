@@ -1,0 +1,23 @@
+#[derive(Clone, Debug)]
+pub enum UnitType {
+    Warrior,
+    Mage,
+    Cleric,
+    Ranger,
+    Scout,
+    Knight,
+    DarkKnight,
+    HeavyKnight,
+    Android,
+    Sorcerer,
+    Geomancer,
+    MagicKnight,
+    Clergy,
+    Sage,
+    Celestial,
+    Archer,
+    Gunner,
+    Gunslinger,
+    Valkyrie,
+    Wall,
+}
