@@ -8,11 +8,12 @@ use crate::game::unit::Unit;
 use crate::input;
 use crate::resources;
 use crate::scenes;
+use crate::spritesheet::{SpriteLayer, Tile, TileMap};
 use crate::world::World;
 
 pub struct LevelScene {
     done: bool,
-    spritebatch: graphics::spritebatch::SpriteBatch,
+    sprite_layer: SpriteLayer,
     bg: warmy::Res<resources::Image>,
 }
 
@@ -35,10 +36,12 @@ impl LevelScene {
         board.tiles.push(Unit::new());
         board.tiles.push(Unit::new());
 
+        let tilemap = TileMap::new(spritesheet, 16);
+
         LevelScene {
             done,
-            spritebatch: graphics::spritebatch::SpriteBatch::new(spritesheet),
             bg,
+            sprite_layer: SpriteLayer::new(tilemap),
         }
     }
 }
@@ -61,26 +64,24 @@ impl scene::Scene<World, input::Event> for LevelScene {
 
         for board in &gameworld.boards {
             for (position, _tile) in board.with_positions() {
-                let p = graphics::DrawParam::default()
-                    .dest(na::Point2::new(
-                        (position.x as u32) as f32 * 2.0 / 12.0,
-                        position.y as f32,
-                    ))
-                    .src(graphics::Rect::new(
-                        0.0 * (1.0 / 12.0),
-                        11.0 * (1.0 / 21.0),
-                        1.0 / 12.0,
-                        1.0 / 21.0,
-                    ))
-                    .scale(na::Vector2::new(2.0, 2.0));
-
-                self.spritebatch.add(p);
+                self.sprite_layer.add(
+                    &Tile {
+                        sprite_layer: 0,
+                        sprite_id: 5,
+                    },
+                    position.x,
+                    position.y,
+                );
             }
         }
 
-        graphics::draw(ctx, &self.spritebatch, graphics::DrawParam::default())?;
+        graphics::draw(
+            ctx,
+            &self.sprite_layer.batch,
+            graphics::DrawParam::default(),
+        )?;
 
-        self.spritebatch.clear();
+        self.sprite_layer.clear();
 
         Ok(())
     }
