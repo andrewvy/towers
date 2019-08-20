@@ -34,9 +34,11 @@ impl scene::Scene<World, input::Event> for MenuScene {
         "MenuScene"
     }
 
-    fn input(&mut self, gameworld: &mut World, _ev: input::Event, _started: bool) {
-        if gameworld.input.get_button_pressed(input::Button::Menu) {
-            self.done = true;
+    fn input(&mut self, gameworld: &mut World, ev: input::Event, _started: bool) {
+        if let input::InputEvent::InputEffect(_) = ev {
+            if gameworld.input.get_button_pressed(input::Button::Menu) {
+                self.done = true;
+            }
         }
     }
 }

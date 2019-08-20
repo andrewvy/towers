@@ -61,7 +61,7 @@ impl event::EventHandler for MainState {
     ) {
         if let Some(ev) = self.input_binding.resolve(keycode) {
             self.scenes.world.input.update_effect(ev, true);
-            self.scenes.input(ev, true);
+            self.scenes.input(input::InputEvent::InputEffect(ev), false);
         }
     }
 
@@ -73,8 +73,19 @@ impl event::EventHandler for MainState {
     ) {
         if let Some(ev) = self.input_binding.resolve(keycode) {
             self.scenes.world.input.update_effect(ev, false);
-            self.scenes.input(ev, false);
+            self.scenes.input(input::InputEvent::InputEffect(ev), false);
         }
+    }
+
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, dx: f32, dy: f32) {
+        let ev = input::MouseEvent {
+            x: x,
+            y: y,
+            dx: dx,
+            dy: dy,
+        };
+
+        self.scenes.input(input::InputEvent::MouseEffect(ev), false);
     }
 }
 

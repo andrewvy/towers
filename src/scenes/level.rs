@@ -56,8 +56,6 @@ impl scene::Scene<World, input::Event> for LevelScene {
 
         for board in &gameworld.boards {
             for (position, _tile) in board.with_positions() {
-                println!("x: {}, y: {}", position.x, position.y);
-
                 graphics::draw(
                     ctx,
                     &(self.kiwi.borrow().0),
@@ -76,9 +74,11 @@ impl scene::Scene<World, input::Event> for LevelScene {
         "LevelScene"
     }
 
-    fn input(&mut self, gameworld: &mut World, _ev: input::Event, _started: bool) {
-        if gameworld.input.get_button_pressed(input::Button::Menu) {
-            self.done = true;
+    fn input(&mut self, gameworld: &mut World, ev: input::Event, _started: bool) {
+        if let input::InputEvent::InputEffect(_) = ev {
+            if gameworld.input.get_button_pressed(input::Button::Menu) {
+                self.done = true;
+            }
         }
     }
 }

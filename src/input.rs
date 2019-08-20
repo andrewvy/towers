@@ -16,8 +16,22 @@ pub enum Axis {
     Horz,
 }
 
+#[derive(Debug)]
+pub struct MouseEvent {
+    pub x: f32,
+    pub y: f32,
+    pub dx: f32,
+    pub dy: f32,
+}
+
+#[derive(Debug)]
+pub enum InputEvent {
+    InputEffect(input::InputEffect<Axis, Button>),
+    MouseEffect(MouseEvent),
+}
+
 pub type Binding = input::InputBinding<Axis, Button>;
-pub type Event = input::InputEffect<Axis, Button>;
+pub type Event = InputEvent;
 pub type State = input::InputState<Axis, Button>;
 
 /// Create the default keybindings for our input state.
