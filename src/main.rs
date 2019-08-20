@@ -109,6 +109,9 @@ fn main() {
     let (ctx, ev) = &mut cb.build().unwrap();
 
     let state = &mut MainState::new(ctx, &resource_dir);
+
+    ggez::graphics::set_default_filter(ctx, ggez::graphics::FilterMode::Nearest);
+
     if let Err(e) = event::run(ctx, ev, state) {
         println!("Error encountered: {}", e);
     } else {

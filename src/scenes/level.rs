@@ -25,7 +25,10 @@ impl LevelScene {
             .get::<resources::Image>(&resources::Key::from_path("/images/cloudy.png"), ctx)
             .unwrap();
 
-        let spritesheet = graphics::Image::new(ctx, "/images/overworld_tileset_grass.png").unwrap();
+        let mut spritesheet =
+            graphics::Image::new(ctx, "/images/overworld_tileset_grass.png").unwrap();
+
+        spritesheet.set_filter(graphics::FilterMode::Nearest);
 
         let board = world.boards.get_mut(0).unwrap();
 
@@ -64,8 +67,8 @@ impl scene::Scene<World, input::Event> for LevelScene {
                         position.y as f32,
                     ))
                     .src(graphics::Rect::new(
-                        2.0 * (1.0 / 12.0),
-                        5.0 * (1.0 / 21.0),
+                        0.0 * (1.0 / 12.0),
+                        11.0 * (1.0 / 21.0),
                         1.0 / 12.0,
                         1.0 / 21.0,
                     ))
