@@ -12,29 +12,31 @@ use crate::world::World;
 
 pub struct LevelScene {
     done: bool,
-    kiwi: warmy::Res<resources::Image>,
+    spritebatch: graphics::spritebatch::SpriteBatch,
     bg: warmy::Res<resources::Image>,
 }
 
 impl LevelScene {
     pub fn new(ctx: &mut ggez::Context, world: &mut World) -> Self {
         let done = false;
-        let kiwi = world
-            .resources
-            .get::<resources::Image>(&resources::Key::from_path("/images/kiwi.png"), ctx)
-            .unwrap();
 
         let bg = world
             .resources
             .get::<resources::Image>(&resources::Key::from_path("/images/cloudy.png"), ctx)
             .unwrap();
 
+        let spritesheet = graphics::Image::new(ctx, "/images/overworld_tileset_grass.png").unwrap();
+
         let board = world.boards.get_mut(0).unwrap();
 
         board.tiles.push(Unit::new());
         board.tiles.push(Unit::new());
 
-        LevelScene { done, kiwi, bg }
+        LevelScene {
+            done,
+            spritebatch: graphics::spritebatch::SpriteBatch::new(spritesheet),
+            bg,
+        }
     }
 }
 
@@ -56,16 +58,26 @@ impl scene::Scene<World, input::Event> for LevelScene {
 
         for board in &gameworld.boards {
             for (position, _tile) in board.with_positions() {
-                graphics::draw(
-                    ctx,
-                    &(self.kiwi.borrow().0),
-                    graphics::DrawParam::default().dest(na::Point2::new(
-                        (position.x * self.kiwi.borrow().0.width() as u32) as f32,
+                let p = graphics::DrawParam::default()
+                    .dest(na::Point2::new(
+                        (position.x as u32) as f32 * 2.0 / 12.0,
                         position.y as f32,
-                    )),
-                )?;
+                    ))
+                    .src(graphics::Rect::new(
+                        2.0 * (1.0 / 12.0),
+                        5.0 * (1.0 / 21.0),
+                        1.0 / 12.0,
+                        1.0 / 21.0,
+                    ))
+                    .scale(na::Vector2::new(2.0, 2.0));
+
+                self.spritebatch.add(p);
             }
         }
+
+        graphics::draw(ctx, &self.spritebatch, graphics::DrawParam::default())?;
+
+        self.spritebatch.clear();
 
         Ok(())
     }
