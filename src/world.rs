@@ -26,11 +26,9 @@ impl World {
         let store = warmy::Store::new(opt)
             .expect("Could not create asset store?  Does the directory exist?");
 
-        let mut the_world = Self {
+        Self {
             resources: store,
             input: input::State::new(),
-        };
-
-        the_world
+        }
     }
 }
