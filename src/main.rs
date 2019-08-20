@@ -90,10 +90,11 @@ fn main() {
     };
     println!("Resource dir: {:?}", resource_dir);
 
-    let cb = ContextBuilder::new("game-template", "ggez")
-        .window_setup(conf::WindowSetup::default().title("game template"))
+    let cb = ContextBuilder::new("Tower", "Tower")
+        .window_setup(conf::WindowSetup::default().title("Tower"))
         .window_mode(conf::WindowMode::default().dimensions(800.0, 600.0))
         .add_resource_path(&resource_dir);
+
     let (ctx, ev) = &mut cb.build().unwrap();
 
     let state = &mut MainState::new(ctx, &resource_dir);

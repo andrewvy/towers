@@ -1,4 +1,5 @@
-use crate::{input, resources, util};
+use crate::game::board::Board;
+use crate::{input, resources};
 
 use log::*;
 use warmy;
@@ -8,6 +9,7 @@ use std::path;
 pub struct World {
     pub resources: resources::Store,
     pub input: input::State,
+    pub boards: Vec<Board>,
 }
 
 impl World {
@@ -22,12 +24,14 @@ impl World {
         // TODO: ...though this doesn't SEEM to quite do reloading right, so
         // work on it more.
         info!("Setting up resource path: {:?}", resource_dir);
+
         let opt = warmy::StoreOpt::default().set_root(resource_dir);
         let store = warmy::Store::new(opt)
             .expect("Could not create asset store?  Does the directory exist?");
 
         Self {
             resources: store,
+            boards: vec![Board::default()],
             input: input::State::new(),
         }
     }
