@@ -1,13 +1,23 @@
 use crate::game::unit::{Unit, UnitType};
 
-static COMBINATIONS: &'static [(UnitType, [(UnitType, u16); 3])] = &[(
-    UnitType::Knight,
-    [
-        (UnitType::Warrior, 1),
-        (UnitType::Mage, 1),
-        (UnitType::Ranger, 1),
-    ],
-)];
+static COMBINATIONS: &'static [(UnitType, [(UnitType, u16); 3])] = &[
+    (
+        UnitType::Knight,
+        [
+            (UnitType::Warrior, 1),
+            (UnitType::Mage, 1),
+            (UnitType::Ranger, 1),
+        ],
+    ),
+    (
+        UnitType::DarkKnight,
+        [
+            (UnitType::Knight, 1),
+            (UnitType::Warrior, 2),
+            (UnitType::Mage, 2),
+        ],
+    ),
+];
 
 pub trait Combination {
     fn combinations(&self) -> Vec<UnitType>;
