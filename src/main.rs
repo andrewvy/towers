@@ -4,6 +4,7 @@
 use std::env;
 use std::path;
 
+use ggez::nalgebra as na;
 use ggez::{self, *};
 
 mod game;
@@ -48,8 +49,22 @@ impl event::EventHandler for MainState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        let screen = graphics::screen_coordinates(&ctx);
+
         graphics::clear(ctx, graphics::Color::from((0.0, 0.0, 0.4, 0.0)));
         self.scenes.draw(ctx);
+
+        let fps = timer::fps(ctx);
+        let mut fps_display = graphics::Text::new(format!("FPS: {}", fps));
+
+        fps_display.set_bounds(na::Point2::new(400.0, 1000.0), graphics::Align::Left);
+
+        graphics::draw(
+            ctx,
+            &fps_display,
+            (na::Point2::new(0.0, screen.y), graphics::WHITE),
+        )?;
+
         graphics::present(ctx)
     }
 
@@ -104,7 +119,7 @@ fn main() {
 
     let cb = ContextBuilder::new("Tower", "Tower")
         .window_setup(conf::WindowSetup::default().title("Tower"))
-        .window_mode(conf::WindowMode::default().dimensions(800.0, 600.0))
+        .window_mode(conf::WindowMode::default())
         .add_resource_path(&resource_dir);
 
     let (ctx, ev) = &mut cb.build().unwrap();
