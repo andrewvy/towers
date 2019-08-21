@@ -7,7 +7,7 @@ use ggez::{self, graphics};
 use log::*;
 use warmy;
 
-use crate::game::unit;
+use crate::game::{mob, unit};
 use crate::types::Error;
 
 /// Again, because `warmy` assumes direct filesystem dirs
@@ -55,6 +55,9 @@ pub struct Image(pub graphics::Image);
 #[derive(Debug)]
 pub struct Unit(pub unit::Unit);
 
+#[derive(Debug)]
+pub struct MobDefinition(pub mob::MobDefinition);
+
 /// And, here actually tell Warmy how to load things.
 impl warmy::Load<ggez::Context, Key> for Image {
     type Error = Error;
@@ -88,6 +91,26 @@ impl warmy::Load<ggez::Context, Key> for Unit {
                 let ron = ron::de::from_reader(file).map_err(|e| Error::DeserializeError(e))?;
 
                 Ok(warmy::Loaded::from(Unit(ron)))
+            }
+        }
+    }
+}
+
+impl warmy::Load<ggez::Context, Key> for MobDefinition {
+    type Error = Error;
+    fn load(
+        key: Key,
+        _storage: &mut Storage,
+        ctx: &mut ggez::Context,
+    ) -> Result<Loaded<Self>, Self::Error> {
+        debug!("Loading unit {:?}", key);
+
+        match key {
+            Key::Path(path) => {
+                let file = ggez::filesystem::open(ctx, &path).map_err(|e| Error::GgezError(e))?;
+                let ron = ron::de::from_reader(file).map_err(|e| Error::DeserializeError(e))?;
+
+                Ok(warmy::Loaded::from(MobDefinition(ron)))
             }
         }
     }

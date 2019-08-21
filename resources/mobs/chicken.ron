@@ -1,0 +1,7 @@
+MobDefinition (
+    health: 20,
+    physical_defense: 10,
+    magical_defense: 10,
+    invisible: false,
+    spritesheet_id: 1,
+)

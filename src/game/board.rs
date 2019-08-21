@@ -10,6 +10,7 @@ const BOARD_WIDTH: usize = 15;
 const BOARD_SIZE: usize = BOARD_HEIGHT * BOARD_WIDTH;
 
 impl Board {
+    #[allow(dead_code)]
     pub fn at_position<'a>(&'a self, coordinates: na::Point2<usize>) -> &'a Unit {
         &self.tiles[coordinates.x * coordinates.y]
     }

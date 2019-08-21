@@ -4,8 +4,6 @@ use ggez::graphics::{
 };
 use ggez::nalgebra as na;
 
-use crate::resources;
-
 #[derive(Hash, Eq, PartialEq)]
 pub struct Tile {
     pub sprite_layer: i32,

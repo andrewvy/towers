@@ -35,6 +35,12 @@ impl LevelScene {
 
         println!("Warrior unit: {:?}", warrior_unit);
 
+        let chicken = world
+            .resources
+            .get::<resources::MobDefinition>(&resources::Key::from_path("/mobs/chicken.ron"), ctx);
+
+        println!("Chicken mob: {:?}", chicken);
+
         spritesheet.set_filter(graphics::FilterMode::Nearest);
 
         let board = world.boards.get_mut(0).unwrap();
