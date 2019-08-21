@@ -1,4 +1,7 @@
-use ggez::graphics::{self, spritebatch::{SpriteIdx, SpriteBatch}};
+use ggez::graphics::{
+    self,
+    spritebatch::{SpriteBatch, SpriteIdx},
+};
 use ggez::nalgebra as na;
 
 use crate::resources;
@@ -18,10 +21,7 @@ pub struct TileMap {
 }
 
 impl TileMap {
-    pub fn new(
-        image: graphics::Image,
-        sprite_dimensions: u32,
-    ) -> Self {
+    pub fn new(image: graphics::Image, sprite_dimensions: u32) -> Self {
         TileMap {
             sprite_dimensions,
             num_tiles_x: image.width() as u32 / sprite_dimensions,
@@ -54,12 +54,11 @@ impl SpriteLayer {
         let sprite_y = tile.sprite_id as usize / self.tilemap.num_tiles_y as usize;
 
         let draw_param = graphics::DrawParam::default()
-            .src(
-                graphics::Rect::new(
-                    (1.0 / self.tilemap.num_tiles_x as f32) * sprite_x as f32,
-                    (1.0 / self.tilemap.num_tiles_y as f32) * sprite_y as f32,
-                    1.0 / self.tilemap.num_tiles_x as f32,
-                    1.0 / self.tilemap.num_tiles_y as f32
+            .src(graphics::Rect::new(
+                (1.0 / self.tilemap.num_tiles_x as f32) * sprite_x as f32,
+                (1.0 / self.tilemap.num_tiles_y as f32) * sprite_y as f32,
+                1.0 / self.tilemap.num_tiles_x as f32,
+                1.0 / self.tilemap.num_tiles_y as f32,
             ))
             .dest(na::Point2::new(x as f32, y as f32));
 

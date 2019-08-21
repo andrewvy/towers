@@ -78,7 +78,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
         graphics::draw(
             ctx,
             &self.sprite_layer.batch,
-            graphics::DrawParam::default(),
+            graphics::DrawParam::default().scale(na::Vector2::new(2.0, 2.0)),
         )?;
 
         self.sprite_layer.clear();
