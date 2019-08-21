@@ -29,6 +29,12 @@ impl LevelScene {
         let mut spritesheet =
             graphics::Image::new(ctx, "/images/overworld_tileset_grass.png").unwrap();
 
+        let warrior_unit = world
+            .resources
+            .get::<resources::Unit>(&resources::Key::from_path("/units/basic/warrior.ron"), ctx);
+
+        println!("Warrior unit: {:?}", warrior_unit);
+
         spritesheet.set_filter(graphics::FilterMode::Nearest);
 
         let board = world.boards.get_mut(0).unwrap();

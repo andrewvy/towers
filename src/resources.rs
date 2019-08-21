@@ -1,4 +1,5 @@
 //! Example of integrating ggez types with the `warmy` resource loader.
+//! @todo(vy): Learn how to do hot resource reloading with `warmy`.
 
 use std::path;
 
@@ -6,6 +7,7 @@ use ggez::{self, graphics};
 use log::*;
 use warmy;
 
+use crate::game::unit;
 use crate::types::Error;
 
 /// Again, because `warmy` assumes direct filesystem dirs
@@ -50,6 +52,9 @@ pub type Loaded<T> = warmy::Loaded<T, Key>;
 #[derive(Debug, Clone)]
 pub struct Image(pub graphics::Image);
 
+#[derive(Debug)]
+pub struct Unit(pub unit::Unit);
+
 /// And, here actually tell Warmy how to load things.
 impl warmy::Load<ggez::Context, Key> for Image {
     type Error = Error;
@@ -64,6 +69,26 @@ impl warmy::Load<ggez::Context, Key> for Image {
             Key::Path(path) => graphics::Image::new(ctx, path)
                 .map(|x| warmy::Loaded::from(Image(x)))
                 .map_err(|e| Error::GgezError(e)),
+        }
+    }
+}
+
+impl warmy::Load<ggez::Context, Key> for Unit {
+    type Error = Error;
+    fn load(
+        key: Key,
+        _storage: &mut Storage,
+        ctx: &mut ggez::Context,
+    ) -> Result<Loaded<Self>, Self::Error> {
+        debug!("Loading unit {:?}", key);
+
+        match key {
+            Key::Path(path) => {
+                let file = ggez::filesystem::open(ctx, &path).map_err(|e| Error::GgezError(e))?;
+                let ron = ron::de::from_reader(file).map_err(|e| Error::DeserializeError(e))?;
+
+                Ok(warmy::Loaded::from(Unit(ron)))
+            }
         }
     }
 }

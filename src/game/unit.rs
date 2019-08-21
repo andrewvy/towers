@@ -1,4 +1,6 @@
-#[derive(Clone, Copy, Debug, PartialEq)]
+use serde::Deserialize;
+
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize)]
 pub enum UnitType {
     Warrior,
     Mage,
@@ -22,7 +24,7 @@ pub enum UnitType {
     Wall,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Unit {
     pub range: f32,
     pub damage: u32,

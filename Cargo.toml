@@ -18,3 +18,6 @@ warmy = "0.11"
 log = "0.4"
 fern = {version = "0.5", features = ["colored"] }
 chrono = "0.4"
+serde = {version = "1.0.99", features = ["derive"] }
+pathfinding = "1.1.12"
+ron = "0.5.1"
