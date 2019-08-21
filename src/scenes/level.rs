@@ -45,8 +45,9 @@ impl LevelScene {
 
         let board = world.boards.get_mut(0).unwrap();
 
-        board.tiles.push(Unit::new());
-        board.tiles.push(Unit::new());
+        for _ in 1..(15 * 15) {
+            board.tiles.push(Unit::new());
+        }
 
         let tilemap = TileMap::new(spritesheet, 16);
 
