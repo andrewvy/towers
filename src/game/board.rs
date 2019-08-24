@@ -1,8 +1,11 @@
-use crate::game::unit::Unit;
 use ggez::nalgebra as na;
+
+use crate::game::unit::Unit;
+use crate::game::mob::MobEntity;
 
 pub struct Board {
     pub tiles: Vec<Unit>,
+    pub mobs: Vec<MobEntity>,
 }
 
 const BOARD_HEIGHT: usize = 15;
@@ -33,6 +36,7 @@ impl Default for Board {
     fn default() -> Self {
         Board {
             tiles: Vec::with_capacity(BOARD_SIZE),
+            mobs: Vec::with_capacity(100),
         }
     }
 }

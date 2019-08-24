@@ -44,9 +44,9 @@ impl SpriteLayer {
         }
     }
 
-    pub fn add(&mut self, tile: &Tile, x: u32, y: u32) -> SpriteIdx {
-        let x: usize = x as usize * self.tilemap.sprite_dimensions as usize;
-        let y: usize = y as usize * self.tilemap.sprite_dimensions as usize;
+    pub fn add(&mut self, tile: &Tile, x: f32, y: f32) -> SpriteIdx {
+        let x = x * self.tilemap.sprite_dimensions as f32;
+        let y = y * self.tilemap.sprite_dimensions as f32;
 
         let sprite_x = tile.sprite_id as usize % self.tilemap.num_tiles_x as usize;
         let sprite_y = tile.sprite_id as usize / self.tilemap.num_tiles_y as usize;
@@ -58,7 +58,7 @@ impl SpriteLayer {
                 1.0 / self.tilemap.num_tiles_x as f32,
                 1.0 / self.tilemap.num_tiles_y as f32,
             ))
-            .dest(na::Point2::new(x as f32, y as f32));
+            .dest(na::Point2::new(x, y));
 
         self.batch.add(draw_param)
     }

@@ -4,6 +4,7 @@ use ggez::nalgebra as na;
 use ggez_goodies::scene;
 use warmy;
 
+use crate::game::mob;
 use crate::game::unit::Unit;
 use crate::input;
 use crate::resources;
@@ -29,17 +30,11 @@ impl LevelScene {
         let mut spritesheet =
             graphics::Image::new(ctx, "/images/overworld_tileset_grass.png").unwrap();
 
-        let warrior_unit = world
-            .resources
-            .get::<resources::Unit>(&resources::Key::from_path("/units/basic/warrior.ron"), ctx);
-
-        println!("Warrior unit: {:?}", warrior_unit);
-
-        let chicken = world
-            .resources
-            .get::<resources::MobDefinition>(&resources::Key::from_path("/mobs/chicken.ron"), ctx);
-
-        println!("Chicken mob: {:?}", chicken);
+        /*
+                let warrior_unit = world
+                    .resources
+                    .get::<resources::Unit>(&resources::Key::from_path("/units/basic/warrior.ron"), ctx);
+        */
 
         spritesheet.set_filter(graphics::FilterMode::Nearest);
 
@@ -51,6 +46,15 @@ impl LevelScene {
 
         let tilemap = TileMap::new(spritesheet, 16);
 
+        let chicken_definition = world
+            .resources
+            .get::<resources::MobDefinition>(&resources::Key::from_path("/mobs/chicken.ron"), ctx)
+            .unwrap();
+
+        let chicken: mob::MobEntity = chicken_definition.borrow().0.into();
+
+        board.mobs.push(chicken);
+
         LevelScene {
             done,
             bg,
@@ -60,7 +64,13 @@ impl LevelScene {
 }
 
 impl scene::Scene<World, input::Event> for LevelScene {
-    fn update(&mut self, _gameworld: &mut World, _ctx: &mut ggez::Context) -> scenes::Switch {
+    fn update(&mut self, gameworld: &mut World, _ctx: &mut ggez::Context) -> scenes::Switch {
+        for board in &mut gameworld.boards {
+            for mob in board.mobs.iter_mut() {
+                mob.position = mob.position + mob.velocity;
+            }
+        }
+
         if self.done {
             scene::SceneSwitch::Pop
         } else {
@@ -82,8 +92,19 @@ impl scene::Scene<World, input::Event> for LevelScene {
                         sprite_layer: 0,
                         sprite_id: 5,
                     },
-                    position.x,
-                    position.y,
+                    position.x as f32,
+                    position.y as f32,
+                );
+            }
+
+            for mob in board.mobs.iter() {
+                self.sprite_layer.add(
+                    &Tile {
+                        sprite_layer: 0,
+                        sprite_id: 51,
+                    },
+                    mob.position.x,
+                    mob.position.y,
                 );
             }
         }
