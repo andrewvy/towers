@@ -45,7 +45,7 @@ impl LevelScene {
 
         let board = world.boards.get_mut(0).unwrap();
 
-        for _ in 1..(15 * 15) {
+        for _ in 0..(15 * 15) {
             board.tiles.push(Unit::new());
         }
 
@@ -88,10 +88,24 @@ impl scene::Scene<World, input::Event> for LevelScene {
             }
         }
 
+        // Given a 15x15 board and the screen dimensions,
+        // Rect = screen.get_center_for_rect(Rect{ x: 0.0, y: 0.0, width: BOARD_WIDTH, height: BOARD_HEIGHT})
+        // each tile is 16px * 15 = 240px unscaled width & height
+
+        const SCALE_X: f32 = 2.0;
+        const SCALE_Y: f32 = 2.0;
+        let board_dimensions = graphics::Rect::new(0.0, 0.0, 240.0 * SCALE_X, 240.0 * SCALE_Y);
+        let calculated_dimensions = gameworld.screen.center_fit(&board_dimensions);
+
         graphics::draw(
             ctx,
             &self.sprite_layer.batch,
-            graphics::DrawParam::default().scale(na::Vector2::new(2.0, 2.0)),
+            graphics::DrawParam::default()
+                .dest(na::Point2::new(
+                    calculated_dimensions.x,
+                    calculated_dimensions.y,
+                ))
+                .scale(na::Vector2::new(SCALE_X, SCALE_Y)),
         )?;
 
         self.sprite_layer.clear();

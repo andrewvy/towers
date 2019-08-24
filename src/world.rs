@@ -1,19 +1,22 @@
-use crate::game::board::Board;
-use crate::{input, resources};
+use std::path;
 
+use ggez::Context;
 use log::*;
 use warmy;
 
-use std::path;
+use crate::game::board::Board;
+use crate::{input, resources};
+use crate::screen::Screen;
 
 pub struct World {
     pub resources: resources::Store,
     pub input: input::State,
     pub boards: Vec<Board>,
+    pub screen: Screen
 }
 
 impl World {
-    pub fn new(resource_dir: &path::Path) -> Self {
+    pub fn new(ctx: &Context, resource_dir: &path::Path) -> Self {
         // We to bridge the gap between ggez and warmy path
         // handling here; ggez assumes its own absolute paths, warmy
         // assumes system-absolute paths; so, we make warmy look in
@@ -29,10 +32,13 @@ impl World {
         let store = warmy::Store::new(opt)
             .expect("Could not create asset store?  Does the directory exist?");
 
+        let screen = Screen::new(ctx);
+
         Self {
             resources: store,
             boards: vec![Board::default()],
             input: input::State::new(),
+            screen
         }
     }
 }
