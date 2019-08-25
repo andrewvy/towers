@@ -67,7 +67,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
     fn update(&mut self, gameworld: &mut World, _ctx: &mut ggez::Context) -> scenes::Switch {
         for board in &mut gameworld.boards {
             for mob in board.mobs.iter_mut() {
-                mob.position = mob.position + mob.velocity;
+                mob.update();
             }
         }
 

@@ -34,6 +34,10 @@ impl MobEntity {
             invisible: definition.invisible,
         }
     }
+
+    pub fn update(&mut self) {
+        self.position = self.position + self.velocity;
+    }
 }
 
 impl From<MobDefinition> for MobEntity {
