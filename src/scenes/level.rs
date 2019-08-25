@@ -16,6 +16,7 @@ pub struct LevelScene {
     sprite_layer: SpriteLayer,
     bg: warmy::Res<resources::Image>,
     island: warmy::Res<resources::Image>,
+    paths: Vec<na::Point2<i32>>,
 }
 
 impl LevelScene {
@@ -60,14 +61,13 @@ impl LevelScene {
 
         board.mobs.push(chicken);
 
-        let path = board.calculate_path(na::Point2::new(5, 5), na::Point2::new(5, 19));
-
-        println!("{:?}", path);
+        let (paths, _) = board.calculate_path(na::Point2::new(5, 5), na::Point2::new(5, 19)).unwrap();
 
         LevelScene {
             done,
             bg,
             island,
+            paths,
             sprite_layer: SpriteLayer::new(tilemap),
         }
     }
@@ -116,8 +116,8 @@ impl scene::Scene<World, input::Event> for LevelScene {
                         sprite_layer: 0,
                         sprite_id: 5,
                     },
-                    position.x as f32,
-                    position.y as f32,
+                    position.x as f32 * 16.0,
+                    position.y as f32 * 16.0,
                 );
             }
 

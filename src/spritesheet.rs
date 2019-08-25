@@ -45,9 +45,6 @@ impl SpriteLayer {
     }
 
     pub fn add(&mut self, tile: &Tile, x: f32, y: f32) -> SpriteIdx {
-        let x = x * self.tilemap.sprite_dimensions as f32;
-        let y = y * self.tilemap.sprite_dimensions as f32;
-
         let sprite_x = tile.sprite_id as usize % self.tilemap.num_tiles_x as usize;
         let sprite_y = tile.sprite_id as usize / self.tilemap.num_tiles_y as usize;
 
