@@ -5,7 +5,6 @@ use ggez_goodies::scene;
 use warmy;
 
 use crate::game::mob;
-use crate::game::unit::Unit;
 use crate::input;
 use crate::resources;
 use crate::scenes;
@@ -16,6 +15,7 @@ pub struct LevelScene {
     done: bool,
     sprite_layer: SpriteLayer,
     bg: warmy::Res<resources::Image>,
+    island: warmy::Res<resources::Image>,
 }
 
 impl LevelScene {
@@ -24,7 +24,12 @@ impl LevelScene {
 
         let bg = world
             .resources
-            .get::<resources::Image>(&resources::Key::from_path("/images/cloudy.png"), ctx)
+            .get::<resources::Image>(&resources::Key::from_path("/images/bg.png"), ctx)
+            .unwrap();
+
+        let island = world
+            .resources
+            .get::<resources::Image>(&resources::Key::from_path("/images/island.png"), ctx)
             .unwrap();
 
         let mut spritesheet =
@@ -40,8 +45,8 @@ impl LevelScene {
 
         let board = world.boards.get_mut(0).unwrap();
 
-        for _ in 0..(15 * 15) {
-            board.tiles.push(Unit::new());
+        for _ in 0..(40 * 40) {
+            board.tiles.push(None);
         }
 
         let tilemap = TileMap::new(spritesheet, 16);
@@ -55,9 +60,14 @@ impl LevelScene {
 
         board.mobs.push(chicken);
 
+        let path = board.calculate_path(na::Point2::new(5, 5), na::Point2::new(5, 19));
+
+        println!("{:?}", path);
+
         LevelScene {
             done,
             bg,
+            island,
             sprite_layer: SpriteLayer::new(tilemap),
         }
     }
@@ -82,7 +92,21 @@ impl scene::Scene<World, input::Event> for LevelScene {
         graphics::draw(
             ctx,
             &(self.bg.borrow().0),
-            graphics::DrawParam::default().scale(na::Vector2::new(2.0, 2.0)),
+            graphics::DrawParam::default().scale(na::Vector2::new(4.0, 4.0)),
+        )?;
+
+        let island_dimension = graphics::Rect::new(0.0, 0.0, 656.0 * 1.5, 656.0 * 1.5);
+        let calculated_dimensions = gameworld.screen.center_fit(&island_dimension);
+
+        graphics::draw(
+            ctx,
+            &(self.island.borrow().0),
+            graphics::DrawParam::default()
+                .scale(na::Vector2::new(1.5, 1.5))
+                .dest(na::Point2::new(
+                    calculated_dimensions.x,
+                    calculated_dimensions.y,
+                )),
         )?;
 
         for board in &gameworld.boards {
@@ -101,7 +125,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
                 self.sprite_layer.add(
                     &Tile {
                         sprite_layer: 0,
-                        sprite_id: 51,
+                        sprite_id: 350,
                     },
                     mob.position.x,
                     mob.position.y,
@@ -111,11 +135,11 @@ impl scene::Scene<World, input::Event> for LevelScene {
 
         // Given a 15x15 board and the screen dimensions,
         // Rect = screen.get_center_for_rect(Rect{ x: 0.0, y: 0.0, width: BOARD_WIDTH, height: BOARD_HEIGHT})
-        // each tile is 16px * 15 = 240px unscaled width & height
+        // each tile is 16px * 40 = 640px unscaled width & height
 
-        const SCALE_X: f32 = 2.0;
-        const SCALE_Y: f32 = 2.0;
-        let board_dimensions = graphics::Rect::new(0.0, 0.0, 240.0 * SCALE_X, 240.0 * SCALE_Y);
+        const SCALE_X: f32 = 1.5;
+        const SCALE_Y: f32 = 1.5;
+        let board_dimensions = graphics::Rect::new(0.0, 0.0, 640.0 * SCALE_X, 640.0 * SCALE_Y);
         let calculated_dimensions = gameworld.screen.center_fit(&board_dimensions);
 
         graphics::draw(

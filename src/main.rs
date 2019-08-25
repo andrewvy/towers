@@ -122,7 +122,7 @@ fn main() {
 
     let cb = ContextBuilder::new("Tower", "Tower")
         .window_setup(conf::WindowSetup::default().title("Tower"))
-        .window_mode(conf::WindowMode::default())
+        .window_mode(conf::WindowMode::default().dimensions(1280.0, 1024.0))
         .add_resource_path(&resource_dir);
 
     let (ctx, ev) = &mut cb.build().unwrap();

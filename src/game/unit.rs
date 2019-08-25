@@ -48,6 +48,7 @@ impl Default for Unit {
 }
 
 impl Unit {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Unit::default()
     }

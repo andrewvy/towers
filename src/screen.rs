@@ -4,7 +4,9 @@ use ggez::{graphics, Context};
 pub struct Screen {
     width: f32,
     height: f32,
+    #[allow(dead_code)]
     scaled_width: f32,
+    #[allow(dead_code)]
     scaled_height: f32,
 }
 
@@ -24,6 +26,7 @@ impl Screen {
         }
     }
 
+    #[allow(dead_code)]
     pub fn to_screen_coordinate(&self, point: na::Point2<f32>) -> na::Point2<f32> {
         na::Point2::new(point.x * self.scaled_width, point.y * self.scaled_height)
     }
