@@ -46,17 +46,14 @@ impl MobEntity {
         }
     }
 
-    pub fn push_destination() {
-    }
-
     pub fn update(&mut self) {
         if self.status == MobEntityStatus::Walking {
             // @TODO(vy): This detects whether the mob is at the designated tile. These magic
             // numbers are hardcoded, which represents that a tile is 16px wide & high.
-            if ((self.position.x / 16.0) >= self.destination.x - 1.0)
-                && ((self.position.x / 16.0) <= self.destination.x + 1.0)
-                && ((self.position.y / 16.0) >= self.destination.y - 1.0)
-                && ((self.position.y / 16.0) <= self.destination.y + 1.0)
+            if ((self.position.x / 16.0) >= self.destination.x - 0.5)
+                && ((self.position.x / 16.0) <= self.destination.x + 0.5)
+                && ((self.position.y / 16.0) >= self.destination.y - 0.5)
+                && ((self.position.y / 16.0) <= self.destination.y + 0.5)
             {
                 self.status = MobEntityStatus::FinishedPath;
             } else {

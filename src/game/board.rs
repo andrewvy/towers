@@ -9,8 +9,7 @@ pub struct Board {
     pub tiles: Vec<Option<Unit>>,
     pub mobs: Vec<MobEntity>,
 
-    #[allow(dead_code)]
-    waypoints: Vec<na::Point2<f32>>,
+    waypoints: Vec<(na::Point2<i32>, na::Point2<i32>)>,
 }
 
 const BOARD_HEIGHT: usize = 40;
@@ -37,15 +36,31 @@ impl Board {
 
     pub fn calculate_path(
         &self,
-        from: na::Point2<i32>,
-        goal: na::Point2<i32>,
+        from: &na::Point2<i32>,
+        goal: &na::Point2<i32>,
     ) -> Option<(Vec<na::Point2<i32>>, i32)> {
         astar(
-            &from,
+            from,
             |p| self.successors(p),
             |p| ((goal.x - p.x).abs() + (goal.y - p.y).abs()).abs(),
-            |p| *p == goal,
+            |p| *p == *goal,
         )
+    }
+
+    pub fn calculate_paths(&self) -> Option<(Vec<na::Point2<i32>>)> {
+        let results = self.waypoints.iter().map(|(start, end)| {
+            self.calculate_path(start, end)
+        });
+
+        if results.clone().any(|result| result.is_none()) {
+            None
+        } else {
+            Some(results.fold(Vec::with_capacity(32), |mut acc, result| {
+                let (mut points, _) = result.unwrap();
+                acc.append(&mut points);
+                acc
+            }))
+        }
     }
 
     // @TODO(vy): This should handle the cases of preventing movement through diagonals.
@@ -82,12 +97,11 @@ impl Board {
 impl Default for Board {
     fn default() -> Self {
         let waypoints = vec![
-            na::Point2::new(5.0, 19.0),
-            na::Point2::new(33.0, 19.0),
-            na::Point2::new(33.0, 5.0),
-            na::Point2::new(19.0, 5.0),
-            na::Point2::new(19.0, 33.0),
-            na::Point2::new(33.0, 33.0),
+            (na::Point2::new(5, 19), na::Point2::new(33, 19)),
+            (na::Point2::new(33, 19), na::Point2::new(33, 5)),
+            (na::Point2::new(33, 5), na::Point2::new(19, 5)),
+            (na::Point2::new(19, 5), na::Point2::new(19, 33)),
+            (na::Point2::new(19, 33), na::Point2::new(33, 33)),
         ];
 
         Board {

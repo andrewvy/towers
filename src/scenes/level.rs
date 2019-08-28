@@ -55,8 +55,8 @@ impl LevelScene {
 
         board.mobs.push(chicken);
 
-        let (paths, _) = board
-            .calculate_path(na::Point2::new(5, 5), na::Point2::new(5, 19))
+        let paths = board
+            .calculate_paths()
             .unwrap();
 
         LevelScene {
@@ -116,15 +116,17 @@ impl scene::Scene<World, input::Event> for LevelScene {
         )?;
 
         for board in &gameworld.boards {
-            for (position, _tile) in board.with_positions() {
-                self.sprite_layer.add(
-                    &Tile {
-                        sprite_layer: 0,
-                        sprite_id: 5,
-                    },
-                    position.x as f32 * 16.0,
-                    position.y as f32 * 16.0,
-                );
+            for (position, tile) in board.with_positions() {
+                if tile.is_some() {
+                    self.sprite_layer.add(
+                        &Tile {
+                            sprite_layer: 0,
+                            sprite_id: 5,
+                        },
+                        position.x as f32 * 16.0,
+                        position.y as f32 * 16.0,
+                    );
+                }
             }
 
             for mob in board.mobs.iter() {
