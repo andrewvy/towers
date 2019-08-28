@@ -48,6 +48,7 @@ impl Board {
         )
     }
 
+    // @TODO(vy): This should handle the cases of preventing movement through diagonals.
     fn successors(&self, point: &na::Point2<i32>) -> Vec<(na::Point2<i32>, i32)> {
         let mut tiles: Vec<na::Point2<i32>> = Vec::with_capacity(8);
 

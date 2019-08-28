@@ -28,6 +28,7 @@ impl MainState {
         let mut scenestack = scenes::Stack::new(ctx, world);
         let initial_scene = Box::new(scenes::menu::MenuScene::new(ctx, &mut scenestack.world));
         let level_scene = Box::new(scenes::level::LevelScene::new(ctx, &mut scenestack.world));
+
         scenestack.push(level_scene);
         scenestack.push(initial_scene);
 

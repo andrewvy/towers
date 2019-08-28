@@ -5,14 +5,14 @@ use log::*;
 use warmy;
 
 use crate::game::board::Board;
-use crate::{input, resources};
 use crate::screen::Screen;
+use crate::{input, resources};
 
 pub struct World {
     pub resources: resources::Store,
     pub input: input::State,
     pub boards: Vec<Board>,
-    pub screen: Screen
+    pub screen: Screen,
 }
 
 impl World {
@@ -38,7 +38,7 @@ impl World {
             resources: store,
             boards: vec![Board::default()],
             input: input::State::new(),
-            screen
+            screen,
         }
     }
 }

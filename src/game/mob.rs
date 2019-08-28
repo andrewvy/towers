@@ -11,8 +11,13 @@ pub struct MobDefinition {
     pub spritesheet_id: u32,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum MobEntityStatus {
+    Walking,
+    FinishedPath,
+}
+
 #[derive(Debug)]
-#[allow(dead_code)]
 pub struct MobEntity {
     pub position: na::Point2<f32>,
     pub destination: na::Point2<f32>,
@@ -22,6 +27,7 @@ pub struct MobEntity {
     pub physical_defense: i32,
     pub magical_defense: i32,
     pub invisible: bool,
+    pub status: MobEntityStatus,
 }
 
 impl MobEntity {
@@ -31,6 +37,7 @@ impl MobEntity {
             position: na::Point2::new(0.0, 0.0),
             destination: na::Point2::new(1.0, 1.0),
             path_index: 0,
+            status: MobEntityStatus::Walking,
             current_health: definition.health,
             physical_defense: definition.physical_defense,
             magical_defense: definition.magical_defense,
@@ -39,24 +46,40 @@ impl MobEntity {
         }
     }
 
+    pub fn push_destination() {
+    }
+
     pub fn update(&mut self) {
-        let diff: na::Vector2<f32> = self.destination - self.position;
-        let new_position = self.position + diff.normalize() * self.movement_speed;
-        self.position = new_position;
+        if self.status == MobEntityStatus::Walking {
+            // @TODO(vy): This detects whether the mob is at the designated tile. These magic
+            // numbers are hardcoded, which represents that a tile is 16px wide & high.
+            if ((self.position.x / 16.0) >= self.destination.x - 1.0)
+                && ((self.position.x / 16.0) <= self.destination.x + 1.0)
+                && ((self.position.y / 16.0) >= self.destination.y - 1.0)
+                && ((self.position.y / 16.0) <= self.destination.y + 1.0)
+            {
+                self.status = MobEntityStatus::FinishedPath;
+            } else {
+                let diff: na::Vector2<f32> = (self.destination * 16.0) - self.position;
+                let new_position = self.position + diff.normalize() * self.movement_speed;
+                self.position = new_position;
+            }
+        }
     }
 }
 
 impl From<MobDefinition> for MobEntity {
     fn from(definition: MobDefinition) -> Self {
         MobEntity {
-            position: na::Point2::new(0.0, 0.0),
-            destination: na::Point2::new(200.0, 200.0),
+            position: na::Point2::new(5.0, 5.0),
+            destination: na::Point2::new(5.0, 5.0),
             path_index: 0,
+            status: MobEntityStatus::Walking,
             current_health: definition.health,
             physical_defense: definition.physical_defense,
             magical_defense: definition.magical_defense,
             invisible: definition.invisible,
-            movement_speed: 3.0,
+            movement_speed: 1.0,
         }
     }
 }

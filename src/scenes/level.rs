@@ -36,12 +36,6 @@ impl LevelScene {
         let mut spritesheet =
             graphics::Image::new(ctx, "/images/overworld_tileset_grass.png").unwrap();
 
-        /*
-                let warrior_unit = world
-                    .resources
-                    .get::<resources::Unit>(&resources::Key::from_path("/units/basic/warrior.ron"), ctx);
-        */
-
         spritesheet.set_filter(graphics::FilterMode::Nearest);
 
         let board = world.boards.get_mut(0).unwrap();
@@ -61,7 +55,9 @@ impl LevelScene {
 
         board.mobs.push(chicken);
 
-        let (paths, _) = board.calculate_path(na::Point2::new(5, 5), na::Point2::new(5, 19)).unwrap();
+        let (paths, _) = board
+            .calculate_path(na::Point2::new(5, 5), na::Point2::new(5, 19))
+            .unwrap();
 
         LevelScene {
             done,
@@ -78,6 +74,16 @@ impl scene::Scene<World, input::Event> for LevelScene {
         for board in &mut gameworld.boards {
             for mob in board.mobs.iter_mut() {
                 mob.update();
+
+                if mob.status == mob::MobEntityStatus::FinishedPath {
+                    mob.path_index += 1;
+
+                    if (mob.path_index as usize) < self.paths.len() {
+                        let new_path = self.paths[mob.path_index as usize];
+                        mob.destination = na::Point2::new(new_path.x as f32, new_path.y as f32);
+                        mob.status = mob::MobEntityStatus::Walking;
+                    }
+                }
             }
         }
 
