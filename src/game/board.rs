@@ -16,6 +16,24 @@ const BOARD_HEIGHT: usize = 40;
 const BOARD_WIDTH: usize = 40;
 const BOARD_SIZE: usize = BOARD_HEIGHT * BOARD_WIDTH;
 
+struct DamageEvent {
+    damage: u32,
+    source: na::Point2<f32>,
+    range: f32,
+    applied: bool,
+}
+
+impl DamageEvent {
+    pub fn new(damage: u32, source: na::Point2<f32>, range: f32) -> Self {
+        Self {
+            damage,
+            source,
+            range,
+            applied: false,
+        }
+    }
+}
+
 impl Board {
     pub fn at_position<'a>(&'a self, coordinates: &na::Point2<i32>) -> Option<&Unit> {
         self.tiles[coordinates.x as usize * coordinates.y as usize].as_ref()
@@ -78,24 +96,47 @@ impl Board {
     }
 
     pub fn update(&mut self) {
-        let mobs = &self.mobs.clone();
-        let mut units_with_positions = self.with_positions_mut();
+        let mut damage_events: Vec<DamageEvent> = self
+            .with_positions_mut()
+            .iter_mut()
+            .filter_map(|(position, unit)| {
+                if let Some(unit) = unit {
+                    match unit.perform_attack() {
+                        Some(damage) => {
+                            let real_position =
+                                na::Point2::new(position.x as f32 * 16.0, position.y as f32 * 16.0);
 
-        for (position, unit) in units_with_positions.iter_mut() {
-            if let Some(unit) = unit {
-                let real_position =
-                    na::Point2::new(position.x as f32 * 16.0, position.y as f32 * 16.0);
+                            Some(DamageEvent::new(damage, real_position, unit.range))
+                        }
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
 
-                let mobs_within_range: Vec<&MobEntity> = mobs
-                    .iter()
-                    .filter(|mob| {
-                        let distance = na::distance(&mob.position, &real_position);
-                        distance <= unit.range
-                    })
-                    .collect();
+        for damage_event in damage_events.iter_mut() {
+            let mut index = 0;
 
-                if (!mobs_within_range.is_empty() && unit.perform_attack()) {
-                    println!("attack!");
+            while index != self.mobs.len() {
+                if damage_event.applied {
+                    return;
+                }
+
+                let mob = &mut self.mobs[index];
+                let distance = na::distance(&mob.position, &damage_event.source);
+                if distance <= damage_event.range {
+                    mob.damage(damage_event.damage);
+                    damage_event.applied = true;
+
+                    if mob.is_alive() {
+                        index += 1;
+                    } else {
+                        self.mobs.remove(index);
+                    }
+                } else {
+                    index += 1;
                 }
             }
         }

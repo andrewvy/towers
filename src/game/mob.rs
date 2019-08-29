@@ -36,7 +36,7 @@ impl MobEntity {
     }
 
     pub fn update(&mut self) {
-        if self.status == MobEntityStatus::Walking {
+        if self.status != MobEntityStatus::FinishedPath {
             // @TODO(vy): This detects whether the mob is at the designated tile. These magic
             // numbers are hardcoded, which represents that a tile is 16px wide & high.
             if ((self.position.x / 16.0) >= self.destination.x - 0.5)
@@ -51,6 +51,14 @@ impl MobEntity {
                 self.position = new_position;
             }
         }
+    }
+
+    pub fn damage(&mut self, damage: u32) {
+        self.current_health -= damage as i32
+    }
+
+    pub fn is_alive(&self) -> bool {
+        self.current_health > 0
     }
 }
 

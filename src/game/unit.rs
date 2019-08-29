@@ -43,8 +43,8 @@ impl Default for Unit {
     fn default() -> Self {
         Unit {
             range: 0.0,
-            damage: 0,
-            attack_speed: 1.0,
+            damage: 10,
+            attack_speed: 2.0,
             unit_type: UnitType::Wall,
             rank: 1,
             attacks: false,
@@ -59,14 +59,14 @@ impl Unit {
         Unit::default()
     }
 
-    pub fn perform_attack(&mut self) -> bool {
-        let attack_per_millis = ((1.0 / self.attack_speed) as u32 * 1000).into();
+    pub fn perform_attack(&mut self) -> Option<u32> {
+        let attack_per_millis = ((1.0 / self.attack_speed) * 1000.0) as u32;
 
-        if self.last_attacked.elapsed().as_millis() >= attack_per_millis {
+        if self.last_attacked.elapsed().as_millis() >= attack_per_millis.into() {
             self.last_attacked = Instant::now();
-            return true;
+            return Some(self.damage);
         } else {
-            return false;
+            return None;
         }
     }
 }
