@@ -5,6 +5,7 @@ use ggez_goodies::scene;
 use warmy;
 
 use crate::game::mob;
+use crate::game::unit;
 use crate::input;
 use crate::resources;
 use crate::scenes;
@@ -40,8 +41,19 @@ impl LevelScene {
 
         let board = world.boards.get_mut(0).unwrap();
 
-        for _ in 0..(40 * 40) {
-            board.tiles.push(None);
+        for index in 0..(40 * 40) {
+            let x = index % 40;
+            let y = index / 40;
+
+            if (x, y) == (5, 10) {
+                board.tiles.push(Some(unit::Unit {
+                    unit_type: unit::UnitType::Warrior,
+                    range: 36.0,
+                    ..unit::Unit::default()
+                }));
+            } else {
+                board.tiles.push(None);
+            }
         }
 
         let tilemap = TileMap::new(spritesheet, 16);
@@ -51,13 +63,11 @@ impl LevelScene {
             .get::<resources::MobDefinition>(&resources::Key::from_path("/mobs/chicken.ron"), ctx)
             .unwrap();
 
-        let chicken: mob::MobEntity = chicken_definition.borrow().0.into();
+        let chicken: mob::MobEntity = (&chicken_definition.borrow().0).into();
 
         board.mobs.push(chicken);
 
-        let paths = board
-            .calculate_paths()
-            .unwrap();
+        let paths = board.calculate_paths().unwrap();
 
         LevelScene {
             done,
@@ -80,9 +90,26 @@ impl scene::Scene<World, input::Event> for LevelScene {
 
                     if (mob.path_index as usize) < self.paths.len() {
                         let new_path = self.paths[mob.path_index as usize];
+
                         mob.destination = na::Point2::new(new_path.x as f32, new_path.y as f32);
                         mob.status = mob::MobEntityStatus::Walking;
                     }
+                }
+            }
+
+            for (position, unit) in board.with_positions() {
+                if let Some(unit) = unit {
+                    let real_position =
+                        na::Point2::new(position.x as f32 * 16.0, position.y as f32 * 16.0);
+
+                    let mobs_within_range: Vec<&mob::MobEntity> = board
+                        .mobs
+                        .iter()
+                        .filter(|mob| {
+                            let distance = na::distance(&mob.position, &real_position);
+                            distance <= unit.range
+                        })
+                        .collect();
                 }
             }
         }
@@ -116,8 +143,10 @@ impl scene::Scene<World, input::Event> for LevelScene {
         )?;
 
         for board in &gameworld.boards {
-            for (position, tile) in board.with_positions() {
-                if tile.is_some() {
+            for (position, unit) in board.with_positions() {
+                if unit.is_some() {
+                    let unit = unit.unwrap();
+
                     self.sprite_layer.add(
                         &Tile {
                             sprite_layer: 0,
@@ -126,6 +155,29 @@ impl scene::Scene<World, input::Event> for LevelScene {
                         position.x as f32 * 16.0,
                         position.y as f32 * 16.0,
                     );
+
+                    let circle = graphics::Mesh::new_circle(
+                        ctx,
+                        graphics::DrawMode::stroke(2.0),
+                        na::Point2::new(
+                            (position.x as f32 * 16.0) + (unit.range / 2.0),
+                            (position.y as f32 * 16.0) + (unit.range / 2.0),
+                        ),
+                        unit.range,
+                        2.0,
+                        graphics::Color::new(1.0, 0.0, 0.0, 1.0),
+                    )?;
+
+                    graphics::draw(
+                        ctx,
+                        &circle,
+                        graphics::DrawParam::default()
+                            .dest(na::Point2::new(
+                                calculated_dimensions.x,
+                                calculated_dimensions.y,
+                            ))
+                            .scale(na::Vector2::new(1.5, 1.5)),
+                    )?;
                 }
             }
 
@@ -147,6 +199,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
 
         const SCALE_X: f32 = 1.5;
         const SCALE_Y: f32 = 1.5;
+
         let board_dimensions = graphics::Rect::new(0.0, 0.0, 640.0 * SCALE_X, 640.0 * SCALE_Y);
         let calculated_dimensions = gameworld.screen.center_fit(&board_dimensions);
 

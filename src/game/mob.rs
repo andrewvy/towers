@@ -31,19 +31,8 @@ pub struct MobEntity {
 }
 
 impl MobEntity {
-    #[allow(dead_code)]
     pub fn new(definition: &MobDefinition) -> Self {
-        Self {
-            position: na::Point2::new(0.0, 0.0),
-            destination: na::Point2::new(1.0, 1.0),
-            path_index: 0,
-            status: MobEntityStatus::Walking,
-            current_health: definition.health,
-            physical_defense: definition.physical_defense,
-            magical_defense: definition.magical_defense,
-            invisible: definition.invisible,
-            movement_speed: 1.0,
-        }
+        definition.into()
     }
 
     pub fn update(&mut self) {
@@ -65,8 +54,8 @@ impl MobEntity {
     }
 }
 
-impl From<MobDefinition> for MobEntity {
-    fn from(definition: MobDefinition) -> Self {
+impl From<&MobDefinition> for MobEntity {
+    fn from(definition: &MobDefinition) -> Self {
         MobEntity {
             position: na::Point2::new(5.0, 5.0),
             destination: na::Point2::new(5.0, 5.0),
