@@ -59,6 +59,8 @@ impl Unit {
         Unit::default()
     }
 
+    // @TODO(vy): This is a bug, it only attacks in an interval, regardless if it targeted a mob or
+    // not.
     pub fn perform_attack(&mut self) -> Option<u32> {
         let attack_per_millis = ((1.0 / self.attack_speed) * 1000.0) as u32;
 

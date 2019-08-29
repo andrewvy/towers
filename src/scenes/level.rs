@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use ggez;
 use ggez::graphics;
 use ggez::nalgebra as na;
@@ -17,6 +19,7 @@ pub struct LevelScene {
     sprite_layer: SpriteLayer,
     bg: warmy::Res<resources::Image>,
     island: warmy::Res<resources::Image>,
+    chicken_definition: warmy::Res<resources::MobDefinition>,
     paths: Vec<na::Point2<i32>>,
 }
 
@@ -45,7 +48,7 @@ impl LevelScene {
             let x = index % 40;
             let y = index / 40;
 
-            if (x, y) == (5, 10) {
+            if (x, y) == (5, 10) || (x, y) == (5, 19) {
                 board.tiles.push(Some(unit::Unit {
                     unit_type: unit::UnitType::Warrior,
                     range: 36.0,
@@ -63,10 +66,6 @@ impl LevelScene {
             .get::<resources::MobDefinition>(&resources::Key::from_path("/mobs/chicken.ron"), ctx)
             .unwrap();
 
-        let chicken: mob::MobEntity = (&chicken_definition.borrow().0).into();
-
-        board.mobs.push(chicken);
-
         let paths = board.calculate_paths().unwrap();
 
         LevelScene {
@@ -74,13 +73,23 @@ impl LevelScene {
             bg,
             island,
             paths,
+            chicken_definition,
             sprite_layer: SpriteLayer::new(tilemap),
         }
     }
 }
 
 impl scene::Scene<World, input::Event> for LevelScene {
-    fn update(&mut self, gameworld: &mut World, _ctx: &mut ggez::Context) -> scenes::Switch {
+    fn update(&mut self, gameworld: &mut World, ctx: &mut ggez::Context) -> scenes::Switch {
+        let ticks = ggez::timer::ticks(ctx) % 60;
+
+        if ticks == 0 {
+            for board in &mut gameworld.boards {
+                let chicken: mob::MobEntity = (&self.chicken_definition.borrow().0).into();
+                board.mobs.push(chicken);
+            }
+        }
+
         for board in &mut gameworld.boards {
             for mob in board.mobs.iter_mut() {
                 mob.update();

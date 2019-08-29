@@ -126,6 +126,7 @@ impl Board {
 
                 let mob = &mut self.mobs[index];
                 let distance = na::distance(&mob.position, &damage_event.source);
+
                 if distance <= damage_event.range {
                     mob.damage(damage_event.damage);
                     damage_event.applied = true;
