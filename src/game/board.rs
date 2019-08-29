@@ -34,6 +34,19 @@ impl Board {
             .collect()
     }
 
+    pub fn with_positions_mut<'a>(&'a mut self) -> Vec<(na::Point2<u32>, &mut Option<Unit>)> {
+        self.tiles
+            .iter_mut()
+            .enumerate()
+            .map(|(index, unit)| {
+                (
+                    na::Point2::new((index % BOARD_HEIGHT) as u32, (index / BOARD_WIDTH) as u32),
+                    unit,
+                )
+            })
+            .collect()
+    }
+
     pub fn calculate_path(
         &self,
         from: &na::Point2<i32>,
@@ -48,9 +61,10 @@ impl Board {
     }
 
     pub fn calculate_paths(&self) -> Option<(Vec<na::Point2<i32>>)> {
-        let results = self.waypoints.iter().map(|(start, end)| {
-            self.calculate_path(start, end)
-        });
+        let results = self
+            .waypoints
+            .iter()
+            .map(|(start, end)| self.calculate_path(start, end));
 
         if results.clone().any(|result| result.is_none()) {
             None
@@ -60,6 +74,30 @@ impl Board {
                 acc.append(&mut points);
                 acc
             }))
+        }
+    }
+
+    pub fn update(&mut self) {
+        let mobs = &self.mobs.clone();
+        let mut units_with_positions = self.with_positions_mut();
+
+        for (position, unit) in units_with_positions.iter_mut() {
+            if let Some(unit) = unit {
+                let real_position =
+                    na::Point2::new(position.x as f32 * 16.0, position.y as f32 * 16.0);
+
+                let mobs_within_range: Vec<&MobEntity> = mobs
+                    .iter()
+                    .filter(|mob| {
+                        let distance = na::distance(&mob.position, &real_position);
+                        distance <= unit.range
+                    })
+                    .collect();
+
+                if (!mobs_within_range.is_empty() && unit.perform_attack()) {
+                    println!("attack!");
+                }
+            }
         }
     }
 

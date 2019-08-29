@@ -97,21 +97,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
                 }
             }
 
-            for (position, unit) in board.with_positions() {
-                if let Some(unit) = unit {
-                    let real_position =
-                        na::Point2::new(position.x as f32 * 16.0, position.y as f32 * 16.0);
-
-                    let mobs_within_range: Vec<&mob::MobEntity> = board
-                        .mobs
-                        .iter()
-                        .filter(|mob| {
-                            let distance = na::distance(&mob.position, &real_position);
-                            distance <= unit.range
-                        })
-                        .collect();
-                }
-            }
+            board.update();
         }
 
         if self.done {

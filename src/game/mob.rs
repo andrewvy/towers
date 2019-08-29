@@ -11,13 +11,13 @@ pub struct MobDefinition {
     pub spritesheet_id: u32,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum MobEntityStatus {
     Walking,
     FinishedPath,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MobEntity {
     pub position: na::Point2<f32>,
     pub destination: na::Point2<f32>,
