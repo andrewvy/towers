@@ -31,10 +31,6 @@ pub struct MobEntity {
 }
 
 impl MobEntity {
-    pub fn new(definition: &MobDefinition) -> Self {
-        definition.into()
-    }
-
     pub fn update(&mut self) {
         if self.status != MobEntityStatus::FinishedPath {
             // @TODO(vy): This detects whether the mob is at the designated tile. These magic
@@ -73,7 +69,7 @@ impl From<&MobDefinition> for MobEntity {
             physical_defense: definition.physical_defense,
             magical_defense: definition.magical_defense,
             invisible: definition.invisible,
-            movement_speed: 1.0,
+            movement_speed: 2.0,
         }
     }
 }

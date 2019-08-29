@@ -59,16 +59,21 @@ impl Unit {
         Unit::default()
     }
 
-    // @TODO(vy): This is a bug, it only attacks in an interval, regardless if it targeted a mob or
-    // not.
-    pub fn perform_attack(&mut self) -> Option<u32> {
-        let attack_per_millis = ((1.0 / self.attack_speed) * 1000.0) as u32;
+    pub fn attack_speed(&self) -> u128 {
+        (((1.0 / self.attack_speed) * 1000.0) as u32).into()
+    }
 
-        if self.last_attacked.elapsed().as_millis() >= attack_per_millis.into() {
-            self.last_attacked = Instant::now();
+    pub fn check_attack(&self) -> Option<u32> {
+        let attack_speed = self.attack_speed();
+
+        if self.last_attacked.elapsed().as_millis() >= attack_speed {
             return Some(self.damage);
         } else {
             return None;
         }
+    }
+
+    pub fn perform_attack(&mut self) {
+        self.last_attacked = Instant::now();
     }
 }

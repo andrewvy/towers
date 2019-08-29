@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use ggez;
 use ggez::graphics;
 use ggez::nalgebra as na;
