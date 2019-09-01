@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 use serde::Deserialize;
+use ggez::nalgebra as na;
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize)]
 pub enum UnitType {
@@ -35,6 +36,9 @@ pub struct Unit {
     pub rank: u16,
     pub attacks: bool,
 
+    #[serde(skip, default = "Unit::default_position")]
+    pub tile_position: na::Point2::<i32>,
+
     #[serde(skip, default = "Instant::now")]
     pub last_attacked: Instant,
 }
@@ -49,6 +53,7 @@ impl Default for Unit {
             rank: 1,
             attacks: false,
             last_attacked: Instant::now(),
+            tile_position: na::Point2::new(0, 0),
         }
     }
 }
@@ -75,5 +80,9 @@ impl Unit {
 
     pub fn perform_attack(&mut self) {
         self.last_attacked = Instant::now();
+    }
+
+    fn default_position() -> na::Point2::<i32> {
+        na::Point2::new(0, 0)
     }
 }

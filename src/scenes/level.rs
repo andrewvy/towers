@@ -42,20 +42,19 @@ impl LevelScene {
 
         let board = world.boards.get_mut(0).unwrap();
 
-        for index in 0..(40 * 40) {
-            let x = index % 40;
-            let y = index / 40;
+        board.tiles.push(unit::Unit {
+            unit_type: unit::UnitType::Warrior,
+            range: 36.0,
+            tile_position: na::Point2::new(5, 10),
+            ..unit::Unit::default()
+        });
 
-            if (x, y) == (5, 10) || (x, y) == (5, 19) {
-                board.tiles.push(Some(unit::Unit {
-                    unit_type: unit::UnitType::Warrior,
-                    range: 36.0,
-                    ..unit::Unit::default()
-                }));
-            } else {
-                board.tiles.push(None);
-            }
-        }
+        board.tiles.push(unit::Unit {
+            unit_type: unit::UnitType::Warrior,
+            range: 36.0,
+            tile_position: na::Point2::new(5, 19),
+            ..unit::Unit::default()
+        });
 
         let tilemap = TileMap::new(spritesheet, 16);
 
@@ -136,42 +135,38 @@ impl scene::Scene<World, input::Event> for LevelScene {
         )?;
 
         for board in &gameworld.boards {
-            for (position, unit) in board.with_positions() {
-                if unit.is_some() {
-                    let unit = unit.unwrap();
+            for unit in &board.tiles {
+                self.sprite_layer.add(
+                    &Tile {
+                        sprite_layer: 0,
+                        sprite_id: 5,
+                    },
+                    unit.tile_position.x as f32 * 16.0,
+                    unit.tile_position.y as f32 * 16.0,
+                );
 
-                    self.sprite_layer.add(
-                        &Tile {
-                            sprite_layer: 0,
-                            sprite_id: 5,
-                        },
-                        position.x as f32 * 16.0,
-                        position.y as f32 * 16.0,
-                    );
+                let circle = graphics::Mesh::new_circle(
+                    ctx,
+                    graphics::DrawMode::stroke(2.0),
+                    na::Point2::new(
+                        (unit.tile_position.x as f32 * 16.0) + (unit.range / 2.0),
+                        (unit.tile_position.y as f32 * 16.0) + (unit.range / 2.0),
+                    ),
+                    unit.range,
+                    2.0,
+                    graphics::Color::new(1.0, 0.0, 0.0, 1.0),
+                )?;
 
-                    let circle = graphics::Mesh::new_circle(
-                        ctx,
-                        graphics::DrawMode::stroke(2.0),
-                        na::Point2::new(
-                            (position.x as f32 * 16.0) + (unit.range / 2.0),
-                            (position.y as f32 * 16.0) + (unit.range / 2.0),
-                        ),
-                        unit.range,
-                        2.0,
-                        graphics::Color::new(1.0, 0.0, 0.0, 1.0),
-                    )?;
-
-                    graphics::draw(
-                        ctx,
-                        &circle,
-                        graphics::DrawParam::default()
-                            .dest(na::Point2::new(
-                                calculated_dimensions.x,
-                                calculated_dimensions.y,
-                            ))
-                            .scale(na::Vector2::new(1.5, 1.5)),
-                    )?;
-                }
+                graphics::draw(
+                    ctx,
+                    &circle,
+                    graphics::DrawParam::default()
+                        .dest(na::Point2::new(
+                            calculated_dimensions.x,
+                            calculated_dimensions.y,
+                        ))
+                        .scale(na::Vector2::new(1.5, 1.5)),
+                )?;
             }
 
             for mob in board.mobs.iter() {

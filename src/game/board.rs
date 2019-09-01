@@ -6,7 +6,7 @@ use crate::game::mob::MobEntity;
 use crate::game::unit::Unit;
 
 pub struct Board {
-    pub tiles: Vec<Option<Unit>>,
+    pub tiles: Vec<Unit>,
     pub mobs: Vec<MobEntity>,
 
     waypoints: Vec<(na::Point2<i32>, na::Point2<i32>)>,
@@ -44,37 +44,15 @@ impl DamageEvent {
 
 impl Board {
     pub fn at_position_mut<'a>(&'a mut self, coordinates: &na::Point2<i32>) -> Option<&mut Unit> {
-        self.tiles[coordinates.x as usize + (coordinates.y as usize * BOARD_HEIGHT)].as_mut()
+        self.tiles.iter_mut().find(|unit| {
+            unit.tile_position.x == coordinates.x && unit.tile_position.y == coordinates.y
+        })
     }
 
     pub fn at_position<'a>(&'a self, coordinates: &na::Point2<i32>) -> Option<&Unit> {
-        self.tiles[coordinates.x as usize + (coordinates.y as usize * BOARD_HEIGHT)].as_ref()
-    }
-
-    pub fn with_positions<'a>(&'a self) -> Vec<(na::Point2<u32>, Option<&Unit>)> {
-        self.tiles
-            .iter()
-            .enumerate()
-            .map(|(index, unit)| {
-                (
-                    na::Point2::new((index % BOARD_HEIGHT) as u32, (index / BOARD_WIDTH) as u32),
-                    unit.as_ref(),
-                )
-            })
-            .collect()
-    }
-
-    pub fn with_positions_mut<'a>(&'a mut self) -> Vec<(na::Point2<u32>, &mut Option<Unit>)> {
-        self.tiles
-            .iter_mut()
-            .enumerate()
-            .map(|(index, unit)| {
-                (
-                    na::Point2::new((index % BOARD_HEIGHT) as u32, (index / BOARD_WIDTH) as u32),
-                    unit,
-                )
-            })
-            .collect()
+        self.tiles.iter().find(|unit| {
+            unit.tile_position.x == coordinates.x && unit.tile_position.y == coordinates.y
+        })
     }
 
     pub fn calculate_path(
@@ -108,27 +86,24 @@ impl Board {
     }
 
     pub fn update(&mut self) {
-        let mut damage_events: Vec<DamageEvent> = self
-            .with_positions_mut()
+        let mut damage_events: Vec<DamageEvent> = self.tiles
             .iter_mut()
-            .filter_map(|(position, unit)| {
-                if let Some(unit) = unit {
-                    match unit.check_attack() {
-                        Some(damage) => {
-                            let real_position =
-                                na::Point2::new(position.x as f32 * 16.0, position.y as f32 * 16.0);
+            .filter_map(|unit| {
+                let position = unit.tile_position;
 
-                            Some(DamageEvent::new(
-                                damage,
-                                na::Point2::new(position.x as i32, position.y as i32),
-                                real_position,
-                                unit.range,
-                            ))
-                        }
-                        _ => None,
+                match unit.check_attack() {
+                    Some(damage) => {
+                        let real_position =
+                            na::Point2::new(position.x as f32 * 16.0, position.y as f32 * 16.0);
+
+                        Some(DamageEvent::new(
+                            damage,
+                            unit.tile_position,
+                            real_position,
+                            unit.range,
+                        ))
                     }
-                } else {
-                    None
+                    _ => None,
                 }
             })
             .collect();
