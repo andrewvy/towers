@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use ggez::nalgebra as na;
 use serde::Deserialize;
 
@@ -23,11 +25,13 @@ pub struct MobEntity {
     pub destination: na::Point2<f32>,
     pub path_index: u32,
     pub movement_speed: f32,
+    pub max_health: i32,
     pub current_health: i32,
     pub physical_defense: i32,
     pub magical_defense: i32,
     pub invisible: bool,
     pub status: MobEntityStatus,
+    pub last_damaged_at: Instant,
 }
 
 impl MobEntity {
@@ -50,7 +54,12 @@ impl MobEntity {
     }
 
     pub fn damage(&mut self, damage: u32) {
-        self.current_health -= damage as i32
+        self.current_health -= damage as i32;
+        self.last_damaged_at = Instant::now();
+    }
+
+    pub fn show_health_bar(&self) -> bool {
+        self.last_damaged_at.elapsed().as_secs() < 5
     }
 
     pub fn is_alive(&self) -> bool {
@@ -65,11 +74,13 @@ impl From<&MobDefinition> for MobEntity {
             destination: na::Point2::new(5.0, 5.0),
             path_index: 0,
             status: MobEntityStatus::Walking,
+            max_health: definition.health,
             current_health: definition.health,
             physical_defense: definition.physical_defense,
             magical_defense: definition.magical_defense,
             invisible: definition.invisible,
             movement_speed: 2.0,
+            last_damaged_at: Instant::now(),
         }
     }
 }

@@ -86,15 +86,18 @@ impl Board {
     }
 
     pub fn update(&mut self) {
-        let mut damage_events: Vec<DamageEvent> = self.tiles
+        let mut damage_events: Vec<DamageEvent> = self
+            .tiles
             .iter_mut()
             .filter_map(|unit| {
                 let position = unit.tile_position;
 
                 match unit.check_attack() {
                     Some(damage) => {
-                        let real_position =
-                            na::Point2::new(position.x as f32 * 16.0, position.y as f32 * 16.0);
+                        let real_position = na::Point2::new(
+                            (position.x as f32 * 16.0) + 4.0,
+                            (position.y as f32 * 16.0) + 4.0,
+                        );
 
                         Some(DamageEvent::new(
                             damage,

@@ -141,19 +141,19 @@ impl scene::Scene<World, input::Event> for LevelScene {
                         sprite_layer: 0,
                         sprite_id: 5,
                     },
-                    unit.tile_position.x as f32 * 16.0,
-                    unit.tile_position.y as f32 * 16.0,
+                    (unit.tile_position.x as f32 * 16.0) + 4.0,
+                    (unit.tile_position.y as f32 * 16.0) + 4.0,
                 );
 
                 let circle = graphics::Mesh::new_circle(
                     ctx,
                     graphics::DrawMode::stroke(2.0),
                     na::Point2::new(
-                        (unit.tile_position.x as f32 * 16.0) + (unit.range / 2.0),
-                        (unit.tile_position.y as f32 * 16.0) + (unit.range / 2.0),
+                        (unit.tile_position.x as f32 * 16.0) + (unit.range / 2.0) + 4.0,
+                        (unit.tile_position.y as f32 * 16.0) + (unit.range / 2.0) + 4.0,
                     ),
                     unit.range,
-                    2.0,
+                    1.0,
                     graphics::Color::new(1.0, 0.0, 0.0, 1.0),
                 )?;
 
@@ -178,6 +178,47 @@ impl scene::Scene<World, input::Event> for LevelScene {
                     mob.position.x,
                     mob.position.y,
                 );
+
+                if mob.show_health_bar() {
+                    let health_percentage = mob.current_health as f32 / mob.max_health as f32;
+                    let width = 20.0 * health_percentage;
+
+                    let current_bar = graphics::Mesh::new_rectangle(
+                        ctx,
+                        graphics::DrawMode::fill(),
+                        graphics::Rect::new(mob.position.x, mob.position.y, width, 2.0),
+                        graphics::Color::new(0.0, 1.0, 0.0, 1.0),
+                    )?;
+
+                    let full_bar = graphics::Mesh::new_rectangle(
+                        ctx,
+                        graphics::DrawMode::fill(),
+                        graphics::Rect::new(mob.position.x, mob.position.y, 20.0, 2.0),
+                        graphics::Color::new(1.0, 0.0, 0.0, 1.0),
+                    )?;
+
+                    graphics::draw(
+                        ctx,
+                        &full_bar,
+                        graphics::DrawParam::default()
+                            .dest(na::Point2::new(
+                                calculated_dimensions.x,
+                                calculated_dimensions.y,
+                            ))
+                            .scale(na::Vector2::new(1.5, 1.5)),
+                    )?;
+
+                    graphics::draw(
+                        ctx,
+                        &current_bar,
+                        graphics::DrawParam::default()
+                            .dest(na::Point2::new(
+                                calculated_dimensions.x,
+                                calculated_dimensions.y,
+                            ))
+                            .scale(na::Vector2::new(1.5, 1.5)),
+                    )?;
+                }
             }
         }
 
