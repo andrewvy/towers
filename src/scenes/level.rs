@@ -59,20 +59,6 @@ impl LevelScene {
 
         let board = world.boards.get_mut(0).unwrap();
 
-        board.tiles.push(unit::Unit {
-            unit_type: unit::UnitType::Warrior,
-            range: 36.0,
-            tile_position: na::Point2::new(5, 10),
-            ..unit::Unit::default()
-        });
-
-        board.tiles.push(unit::Unit {
-            unit_type: unit::UnitType::Warrior,
-            range: 36.0,
-            tile_position: na::Point2::new(5, 19),
-            ..unit::Unit::default()
-        });
-
         let tilemap = TileMap::new(spritesheet, 16);
 
         let chicken_definition = world
@@ -131,7 +117,19 @@ impl scene::Scene<World, input::Event> for LevelScene {
         if let Some(action) = &self.current_user_action {
             match action {
                 UserAction::BuildUnit => {
-                    println!("build unit!");
+                    if let Some(hovered_tile) = self.hovered_tile {
+                        let board = gameworld.boards.get_mut(0).unwrap();
+
+                        board.tiles.push(unit::Unit {
+                            unit_type: unit::UnitType::Warrior,
+                            range: 36.0,
+                            tile_position: na::Point2::new(
+                                hovered_tile.x as i32,
+                                hovered_tile.y as i32,
+                            ),
+                            ..unit::Unit::default()
+                        });
+                    }
                 }
             }
         }
