@@ -32,6 +32,7 @@ pub struct LevelScene {
     island: warmy::Res<resources::Image>,
     chicken_definition: warmy::Res<resources::MobDefinition>,
     state: LevelState,
+    current_ticks: u32,
     current_user_action: Option<UserAction>,
     paths: Vec<na::Point2<i32>>,
     hovered_tile: Option<na::Point2<u32>>,
@@ -88,6 +89,7 @@ impl LevelScene {
             paths,
             chicken_definition,
             hovered_tile: None,
+            current_ticks: 0,
             current_user_action: None,
             state: LevelState::PickUnit,
             sprite_layer: SpriteLayer::new(tilemap),
@@ -96,11 +98,11 @@ impl LevelScene {
 }
 
 impl scene::Scene<World, input::Event> for LevelScene {
-    fn update(&mut self, gameworld: &mut World, ctx: &mut ggez::Context) -> scenes::Switch {
+    fn update(&mut self, gameworld: &mut World, _ctx: &mut ggez::Context) -> scenes::Switch {
         let dt = 1.0 / 60.0;
-        let ticks = ggez::timer::ticks(ctx) % 60;
+        self.current_ticks += 1;
 
-        if ticks == 0 {
+        if self.current_ticks % 60 == 0 {
             for board in &mut gameworld.boards {
                 let chicken: mob::MobEntity = (&self.chicken_definition.borrow().0).into();
                 board.mobs.push(chicken);
