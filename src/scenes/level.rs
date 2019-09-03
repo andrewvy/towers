@@ -12,10 +12,17 @@ use crate::scenes;
 use crate::spritesheet::{SpriteLayer, Tile, TileMap};
 use crate::world::World;
 
+const SCALE_X: f32 = 1.5;
+const SCALE_Y: f32 = 1.5;
+
 pub enum LevelState {
     PickUnit,
     RoundStart,
     RoundEnd,
+}
+
+pub enum UserAction {
+    BuildUnit,
 }
 
 pub struct LevelScene {
@@ -25,7 +32,9 @@ pub struct LevelScene {
     island: warmy::Res<resources::Image>,
     chicken_definition: warmy::Res<resources::MobDefinition>,
     state: LevelState,
+    current_user_action: Option<UserAction>,
     paths: Vec<na::Point2<i32>>,
+    hovered_tile: Option<na::Point2<u32>>,
 }
 
 impl LevelScene {
@@ -78,6 +87,8 @@ impl LevelScene {
             island,
             paths,
             chicken_definition,
+            hovered_tile: None,
+            current_user_action: None,
             state: LevelState::PickUnit,
             sprite_layer: SpriteLayer::new(tilemap),
         }
@@ -115,6 +126,16 @@ impl scene::Scene<World, input::Event> for LevelScene {
             board.update();
         }
 
+        if let Some(action) = &self.current_user_action {
+            match action {
+                UserAction::BuildUnit => {
+                    println!("build unit!");
+                }
+            }
+        }
+
+        self.current_user_action = None;
+
         if self.done {
             scene::SceneSwitch::Pop
         } else {
@@ -132,14 +153,14 @@ impl scene::Scene<World, input::Event> for LevelScene {
             graphics::DrawParam::default().scale(na::Vector2::new(4.0, 4.0)),
         )?;
 
-        let island_dimension = graphics::Rect::new(0.0, 0.0, 656.0 * 1.5, 656.0 * 1.5);
+        let island_dimension = graphics::Rect::new(0.0, 0.0, 656.0 * SCALE_X, 656.0 * SCALE_Y);
         let calculated_dimensions = gameworld.screen.center_fit(&island_dimension);
 
         graphics::draw(
             ctx,
             &(self.island.borrow().0),
             graphics::DrawParam::default()
-                .scale(na::Vector2::new(1.5, 1.5))
+                .scale(na::Vector2::new(SCALE_X, SCALE_Y))
                 .dest(na::Point2::new(
                     calculated_dimensions.x,
                     calculated_dimensions.y,
@@ -177,7 +198,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
                             calculated_dimensions.x,
                             calculated_dimensions.y,
                         ))
-                        .scale(na::Vector2::new(1.5, 1.5)),
+                        .scale(na::Vector2::new(SCALE_X, SCALE_Y)),
                 )?;
             }
 
@@ -217,7 +238,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
                                 calculated_dimensions.x,
                                 calculated_dimensions.y,
                             ))
-                            .scale(na::Vector2::new(1.5, 1.5)),
+                            .scale(na::Vector2::new(SCALE_X, SCALE_Y)),
                     )?;
 
                     graphics::draw(
@@ -228,7 +249,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
                                 calculated_dimensions.x,
                                 calculated_dimensions.y,
                             ))
-                            .scale(na::Vector2::new(1.5, 1.5)),
+                            .scale(na::Vector2::new(SCALE_X, SCALE_Y)),
                     )?;
                 }
             }
@@ -237,9 +258,6 @@ impl scene::Scene<World, input::Event> for LevelScene {
         // Given a 15x15 board and the screen dimensions,
         // Rect = screen.get_center_for_rect(Rect{ x: 0.0, y: 0.0, width: BOARD_WIDTH, height: BOARD_HEIGHT})
         // each tile is 16px * 40 = 640px unscaled width & height
-
-        const SCALE_X: f32 = 1.5;
-        const SCALE_Y: f32 = 1.5;
 
         let board_dimensions = graphics::Rect::new(0.0, 0.0, 640.0 * SCALE_X, 640.0 * SCALE_Y);
         let calculated_dimensions = gameworld.screen.center_fit(&board_dimensions);
@@ -255,6 +273,31 @@ impl scene::Scene<World, input::Event> for LevelScene {
                 .scale(na::Vector2::new(SCALE_X, SCALE_Y)),
         )?;
 
+        if let Some(hover_coords) = self.hovered_tile {
+            let tile_hover = graphics::Mesh::new_rectangle(
+                ctx,
+                graphics::DrawMode::fill(),
+                graphics::Rect::new(
+                    (hover_coords.x as f32 * 16.0) + 8.0,
+                    (hover_coords.y as f32 * 16.0) + 8.0,
+                    16.0,
+                    16.0,
+                ),
+                graphics::Color::new(0.0, 1.0, 0.0, 1.0),
+            )?;
+
+            graphics::draw(
+                ctx,
+                &tile_hover,
+                graphics::DrawParam::default()
+                    .dest(na::Point2::new(
+                        calculated_dimensions.x,
+                        calculated_dimensions.y,
+                    ))
+                    .scale(na::Vector2::new(1.5, 1.5)),
+            )?;
+        }
+
         self.sprite_layer.clear();
 
         Ok(())
@@ -269,6 +312,26 @@ impl scene::Scene<World, input::Event> for LevelScene {
             if gameworld.input.get_button_pressed(input::Button::Menu) {
                 self.done = true;
             }
+
+            if gameworld.input.get_button_pressed(input::Button::Select) {
+                self.current_user_action = Some(UserAction::BuildUnit);
+            }
+        }
+
+        if let input::InputEvent::MouseEffect(effect) = ev {
+            // @TODO(vy): Clean this up, but this calculates the mouse position relative to the
+            // sprite tileboard created at scale.
+            let (x, y) = (effect.x, effect.y);
+            let island_dimension = graphics::Rect::new(0.0, 0.0, 656.0 * SCALE_X, 656.0 * SCALE_Y);
+            let calculated_dimensions = gameworld.screen.center_fit(&island_dimension);
+
+            let offset_x = ((x - calculated_dimensions.x) - 24.0) / SCALE_X;
+            let offset_y = ((y - calculated_dimensions.y) - 24.0) / SCALE_Y;
+
+            self.hovered_tile = Some(na::Point2::new(
+                (na::clamp(offset_x, 0.0, 656.0 * SCALE_X) / 16.0) as u32,
+                (na::clamp(offset_y, 0.0, 656.0 * SCALE_Y) / 16.0) as u32,
+            ));
         }
     }
 }

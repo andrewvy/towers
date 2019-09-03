@@ -99,6 +99,37 @@ impl event::EventHandler for MainState {
         }
     }
 
+    fn mouse_button_down_event(
+        &mut self,
+        _ctx: &mut Context,
+        button: event::MouseButton,
+        _x: f32,
+        _y: f32,
+    ) {
+        // @TODO(vy): ggez-goodies does not bind button events.
+        if event::MouseButton::Left == button {
+            let ev = ggez_goodies::input::InputEffect::Button(input::Button::Select);
+
+            self.scenes.world.input.update_effect(ev, true);
+            self.scenes.input(input::InputEvent::InputEffect(ev), true);
+        }
+    }
+
+    fn mouse_button_up_event(
+        &mut self,
+        _ctx: &mut Context,
+        button: event::MouseButton,
+        _x: f32,
+        _y: f32,
+    ) {
+        if event::MouseButton::Left == button {
+            let ev = ggez_goodies::input::InputEffect::Button(input::Button::Select);
+
+            self.scenes.world.input.update_effect(ev, false);
+            self.scenes.input(input::InputEvent::InputEffect(ev), false);
+        }
+    }
+
     fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, dx: f32, dy: f32) {
         let ev = input::MouseEvent {
             x: x,
