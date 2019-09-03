@@ -12,12 +12,19 @@ use crate::scenes;
 use crate::spritesheet::{SpriteLayer, Tile, TileMap};
 use crate::world::World;
 
+pub enum LevelState {
+    PickUnit,
+    RoundStart,
+    RoundEnd,
+}
+
 pub struct LevelScene {
     done: bool,
     sprite_layer: SpriteLayer,
     bg: warmy::Res<resources::Image>,
     island: warmy::Res<resources::Image>,
     chicken_definition: warmy::Res<resources::MobDefinition>,
+    state: LevelState,
     paths: Vec<na::Point2<i32>>,
 }
 
@@ -71,6 +78,7 @@ impl LevelScene {
             island,
             paths,
             chicken_definition,
+            state: LevelState::PickUnit,
             sprite_layer: SpriteLayer::new(tilemap),
         }
     }
@@ -78,6 +86,7 @@ impl LevelScene {
 
 impl scene::Scene<World, input::Event> for LevelScene {
     fn update(&mut self, gameworld: &mut World, ctx: &mut ggez::Context) -> scenes::Switch {
+        let dt = 1.0 / 60.0;
         let ticks = ggez::timer::ticks(ctx) % 60;
 
         if ticks == 0 {
@@ -89,7 +98,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
 
         for board in &mut gameworld.boards {
             for mob in board.mobs.iter_mut() {
-                mob.update();
+                mob.update(dt);
 
                 if mob.status == mob::MobEntityStatus::FinishedPath {
                     mob.path_index += 1;
@@ -114,6 +123,9 @@ impl scene::Scene<World, input::Event> for LevelScene {
     }
 
     fn draw(&mut self, gameworld: &mut World, ctx: &mut ggez::Context) -> ggez::GameResult<()> {
+        let dt =
+            (ggez::timer::remaining_update_time(ctx).as_millis() as f32 / 1000.0) / (1.0 / 60.0);
+
         graphics::draw(
             ctx,
             &(self.bg.borrow().0),
@@ -175,8 +187,8 @@ impl scene::Scene<World, input::Event> for LevelScene {
                         sprite_layer: 0,
                         sprite_id: 350,
                     },
-                    mob.position.x,
-                    mob.position.y,
+                    mob.last_position.x + (mob.position.x - mob.last_position.x) * dt,
+                    mob.last_position.y + (mob.position.y - mob.last_position.y) * dt,
                 );
 
                 if mob.show_health_bar() {
@@ -186,14 +198,14 @@ impl scene::Scene<World, input::Event> for LevelScene {
                     let current_bar = graphics::Mesh::new_rectangle(
                         ctx,
                         graphics::DrawMode::fill(),
-                        graphics::Rect::new(mob.position.x, mob.position.y, width, 2.0),
+                        graphics::Rect::new(mob.position.x + 4.0, mob.position.y + 4.0, width, 2.0),
                         graphics::Color::new(0.0, 1.0, 0.0, 1.0),
                     )?;
 
                     let full_bar = graphics::Mesh::new_rectangle(
                         ctx,
                         graphics::DrawMode::fill(),
-                        graphics::Rect::new(mob.position.x, mob.position.y, 20.0, 2.0),
+                        graphics::Rect::new(mob.position.x + 4.0, mob.position.y + 4.0, 20.0, 2.0),
                         graphics::Color::new(1.0, 0.0, 0.0, 1.0),
                     )?;
 

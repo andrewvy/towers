@@ -54,7 +54,6 @@ impl event::EventHandler for MainState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         let screen = graphics::screen_coordinates(&ctx);
-
         graphics::clear(ctx, graphics::Color::from((0.0, 0.0, 0.4, 0.0)));
         self.scenes.draw(ctx);
 
@@ -69,7 +68,10 @@ impl event::EventHandler for MainState {
             (na::Point2::new(0.0, screen.y), graphics::WHITE),
         )?;
 
-        graphics::present(ctx)
+        graphics::present(ctx)?;
+        timer::yield_now();
+
+        Ok(())
     }
 
     fn key_down_event(
@@ -122,7 +124,7 @@ fn main() {
     println!("Resource dir: {:?}", resource_dir);
 
     let cb = ContextBuilder::new("Tower", "Tower")
-        .window_setup(conf::WindowSetup::default().title("Tower"))
+        .window_setup(conf::WindowSetup::default().title("Tower").vsync(true))
         .window_mode(conf::WindowMode::default().dimensions(1280.0, 1024.0))
         .add_resource_path(&resource_dir);
 
