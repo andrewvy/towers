@@ -15,6 +15,7 @@ use crate::world::World;
 const SCALE_X: f32 = 1.5;
 const SCALE_Y: f32 = 1.5;
 
+#[derive(PartialEq)]
 pub enum LevelState {
     PickUnit,
     RoundStart,
@@ -32,6 +33,8 @@ pub struct LevelScene {
     island: warmy::Res<resources::Image>,
     chicken_definition: warmy::Res<resources::MobDefinition>,
     state: LevelState,
+    placed_units: u32,
+    spawned_mobs: u32,
     current_ticks: u32,
     current_user_action: Option<UserAction>,
     paths: Vec<na::Point2<i32>>,
@@ -76,6 +79,8 @@ impl LevelScene {
             chicken_definition,
             hovered_tile: None,
             current_ticks: 0,
+            placed_units: 0,
+            spawned_mobs: 0,
             current_user_action: None,
             state: LevelState::PickUnit,
             sprite_layer: SpriteLayer::new(tilemap),
@@ -86,13 +91,27 @@ impl LevelScene {
 impl scene::Scene<World, input::Event> for LevelScene {
     fn update(&mut self, gameworld: &mut World, _ctx: &mut ggez::Context) -> scenes::Switch {
         let dt = 1.0 / 60.0;
-        self.current_ticks += 1;
 
-        if self.current_ticks % 60 == 0 {
-            for board in &mut gameworld.boards {
-                let chicken: mob::MobEntity = (&self.chicken_definition.borrow().0).into();
-                board.mobs.push(chicken);
+        if self.state == LevelState::RoundStart {
+            self.current_ticks += 1;
+
+            if self.spawned_mobs < 10 {
+                if self.current_ticks % 60 == 0 {
+                    for board in &mut gameworld.boards {
+                        let chicken: mob::MobEntity = (&self.chicken_definition.borrow().0).into();
+                        board.mobs.push(chicken);
+                    }
+
+                    self.spawned_mobs += 1;
+                }
             }
+        }
+
+        if self.spawned_mobs == 10
+            && gameworld.boards.iter().all(|board| board.mobs.len() == 0)
+            && self.state == LevelState::RoundStart
+        {
+            self.state = LevelState::RoundEnd;
         }
 
         for board in &mut gameworld.boards {
@@ -117,18 +136,27 @@ impl scene::Scene<World, input::Event> for LevelScene {
         if let Some(action) = &self.current_user_action {
             match action {
                 UserAction::BuildUnit => {
-                    if let Some(hovered_tile) = self.hovered_tile {
-                        let board = gameworld.boards.get_mut(0).unwrap();
+                    if self.placed_units < 5 && self.state == LevelState::PickUnit {
+                        if let Some(hovered_tile) = self.hovered_tile {
+                            let board = gameworld.boards.get_mut(0).unwrap();
 
-                        board.tiles.push(unit::Unit {
-                            unit_type: unit::UnitType::Warrior,
-                            range: 36.0,
-                            tile_position: na::Point2::new(
-                                hovered_tile.x as i32,
-                                hovered_tile.y as i32,
-                            ),
-                            ..unit::Unit::default()
-                        });
+                            board.tiles.push(unit::Unit {
+                                unit_type: unit::UnitType::Warrior,
+                                range: 36.0,
+                                tile_position: na::Point2::new(
+                                    hovered_tile.x as i32,
+                                    hovered_tile.y as i32,
+                                ),
+                                ..unit::Unit::default()
+                            });
+
+                            self.placed_units += 1;
+
+                            if self.placed_units == 5 {
+                                self.state = LevelState::RoundStart;
+                                self.current_ticks = 0;
+                            }
+                        }
                     }
                 }
             }
