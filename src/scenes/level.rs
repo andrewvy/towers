@@ -202,21 +202,42 @@ impl scene::Scene<World, input::Event> for LevelScene {
                         sprite_layer: 0,
                         sprite_id: 5,
                     },
-                    (unit.tile_position.x as f32 * 16.0) + 4.0,
-                    (unit.tile_position.y as f32 * 16.0) + 4.0,
+                    (unit.tile_position.x as f32 * 16.0) + 8.0,
+                    (unit.tile_position.y as f32 * 16.0) + 8.0,
                 );
 
                 let circle = graphics::Mesh::new_circle(
                     ctx,
                     graphics::DrawMode::stroke(2.0),
                     na::Point2::new(
-                        (unit.tile_position.x as f32 * 16.0) + (unit.range / 2.0) + 4.0,
-                        (unit.tile_position.y as f32 * 16.0) + (unit.range / 2.0) + 4.0,
+                        (unit.tile_position.x as f32 * 16.0) + (unit.range / 2.0) + 6.0,
+                        (unit.tile_position.y as f32 * 16.0) + (unit.range / 2.0) + 6.0,
                     ),
                     unit.range,
                     1.0,
-                    graphics::Color::new(1.0, 0.0, 0.0, 1.0),
+                    graphics::Color::new(1.0, 0.0, 0.0, 0.35),
                 )?;
+
+                if let Some(hover_coords) = self.hovered_tile {
+                    if hover_coords.x == unit.tile_position.x as u32
+                        && hover_coords.y == unit.tile_position.y as u32
+                    {
+                        let mut type_display =
+                            graphics::Text::new(format!("Type {:?}", unit.unit_type));
+                        type_display
+                            .set_bounds(na::Point2::new(200.0, 50.0), graphics::Align::Left);
+                        graphics::draw(
+                            ctx,
+                            &type_display,
+                            graphics::DrawParam::default().dest(na::Point2::new(
+                                ((unit.tile_position.x as f32 * 16.0) + 4.0) * SCALE_X
+                                    + calculated_dimensions.x,
+                                ((unit.tile_position.y as f32 * 16.0) - 4.0) * SCALE_Y
+                                    + calculated_dimensions.y,
+                            )),
+                        )?;
+                    }
+                }
 
                 graphics::draw(
                     ctx,
