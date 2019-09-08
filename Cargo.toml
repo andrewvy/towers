@@ -21,3 +21,5 @@ chrono = "0.4"
 serde = {version = "1.0.99", features = ["derive"] }
 pathfinding = "1.1.12"
 ron = "0.5.1"
+droprate = "1.0.0"
+rand = "0.7.0"

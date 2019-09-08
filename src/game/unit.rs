@@ -3,7 +3,9 @@ use std::time::Instant;
 use serde::Deserialize;
 use ggez::nalgebra as na;
 
-#[derive(Clone, Copy, Debug, PartialEq, Deserialize)]
+type Rank = u16;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Hash)]
 pub enum UnitType {
     Warrior,
     Mage,
@@ -27,13 +29,13 @@ pub enum UnitType {
     Wall,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Copy, Clone)]
 pub struct Unit {
     pub range: f32,
     pub damage: u32,
     pub attack_speed: f32,
     pub unit_type: UnitType,
-    pub rank: u16,
+    pub rank: Rank,
     pub attacks: bool,
 
     #[serde(skip, default = "Unit::default_position")]

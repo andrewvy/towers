@@ -1,7 +1,11 @@
+use std::collections::HashMap;
+
+use droprate::{FairlyRandomTable, ProbabilityTable};
 use ggez;
 use ggez::graphics;
 use ggez::nalgebra as na;
 use ggez_goodies::scene;
+use rand::seq::SliceRandom;
 use warmy;
 
 use crate::game::mob;
@@ -39,6 +43,7 @@ pub struct LevelScene {
     current_user_action: Option<UserAction>,
     paths: Vec<na::Point2<i32>>,
     hovered_tile: Option<na::Point2<u32>>,
+    drop_rate: FairlyRandomTable<u16>,
 }
 
 impl LevelScene {
@@ -71,6 +76,12 @@ impl LevelScene {
 
         let paths = board.calculate_paths().unwrap();
 
+        let mut drop_rate_map = HashMap::new();
+
+        drop_rate_map.insert(1, 1.00);
+
+        let drop_rate = FairlyRandomTable::<u16>::from_map(drop_rate_map);
+
         LevelScene {
             done,
             bg,
@@ -81,6 +92,7 @@ impl LevelScene {
             current_ticks: 0,
             placed_units: 0,
             spawned_mobs: 0,
+            drop_rate,
             current_user_action: None,
             state: LevelState::PickUnit,
             sprite_layer: SpriteLayer::new(tilemap),
@@ -139,9 +151,21 @@ impl scene::Scene<World, input::Event> for LevelScene {
                     if self.placed_units < 5 && self.state == LevelState::PickUnit {
                         if let Some(hovered_tile) = self.hovered_tile {
                             let board = gameworld.boards.get_mut(0).unwrap();
+                            let rank = self.drop_rate.random().unwrap();
+                            let unit_type = vec![
+                                unit::UnitType::Cleric,
+                                unit::UnitType::Mage,
+                                unit::UnitType::Ranger,
+                                unit::UnitType::Scout,
+                                unit::UnitType::Warrior,
+                            ]
+                            .choose(&mut rand::thread_rng())
+                            .unwrap()
+                            .to_owned();
 
                             board.tiles.push(unit::Unit {
-                                unit_type: unit::UnitType::Warrior,
+                                rank,
+                                unit_type,
                                 range: 36.0,
                                 tile_position: na::Point2::new(
                                     hovered_tile.x as i32,
@@ -222,8 +246,7 @@ impl scene::Scene<World, input::Event> for LevelScene {
                     if hover_coords.x == unit.tile_position.x as u32
                         && hover_coords.y == unit.tile_position.y as u32
                     {
-                        let mut type_display =
-                            graphics::Text::new(format!("Type {:?}", unit.unit_type));
+                        let mut type_display = graphics::Text::new(format!("{:?} - Rank {:?}", unit.unit_type, unit.rank));
                         type_display
                             .set_bounds(na::Point2::new(200.0, 50.0), graphics::Align::Left);
                         graphics::draw(
