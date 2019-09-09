@@ -246,7 +246,10 @@ impl scene::Scene<World, input::Event> for LevelScene {
                     if hover_coords.x == unit.tile_position.x as u32
                         && hover_coords.y == unit.tile_position.y as u32
                     {
-                        let mut type_display = graphics::Text::new(format!("{:?} - Rank {:?}", unit.unit_type, unit.rank));
+                        let mut type_display = graphics::Text::new(format!(
+                            "{:?} - Rank {:?}",
+                            unit.unit_type, unit.rank
+                        ));
                         type_display
                             .set_bounds(na::Point2::new(200.0, 50.0), graphics::Align::Left);
                         graphics::draw(
@@ -280,8 +283,8 @@ impl scene::Scene<World, input::Event> for LevelScene {
                         sprite_layer: 0,
                         sprite_id: 350,
                     },
-                    mob.last_position.x + (mob.position.x - mob.last_position.x) * dt,
-                    mob.last_position.y + (mob.position.y - mob.last_position.y) * dt,
+                    mob.last_position.x + 8.0 + (mob.position.x - mob.last_position.x) * dt,
+                    mob.last_position.y + 8.0 + (mob.position.y - mob.last_position.y) * dt,
                 );
 
                 if mob.show_health_bar() {
@@ -291,14 +294,19 @@ impl scene::Scene<World, input::Event> for LevelScene {
                     let current_bar = graphics::Mesh::new_rectangle(
                         ctx,
                         graphics::DrawMode::fill(),
-                        graphics::Rect::new(mob.position.x + 4.0, mob.position.y + 4.0, width, 2.0),
+                        graphics::Rect::new(
+                            mob.position.x + 12.0,
+                            mob.position.y + 8.0,
+                            width,
+                            2.0,
+                        ),
                         graphics::Color::new(0.0, 1.0, 0.0, 1.0),
                     )?;
 
                     let full_bar = graphics::Mesh::new_rectangle(
                         ctx,
                         graphics::DrawMode::fill(),
-                        graphics::Rect::new(mob.position.x + 4.0, mob.position.y + 4.0, 20.0, 2.0),
+                        graphics::Rect::new(mob.position.x + 12.0, mob.position.y + 8.0, 20.0, 2.0),
                         graphics::Color::new(1.0, 0.0, 0.0, 1.0),
                     )?;
 
