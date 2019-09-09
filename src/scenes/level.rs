@@ -22,6 +22,7 @@ const SCALE_Y: f32 = 1.5;
 #[derive(PartialEq)]
 pub enum LevelState {
     PickUnit,
+    CombineUnit,
     RoundStart,
     RoundEnd,
 }
@@ -177,8 +178,20 @@ impl scene::Scene<World, input::Event> for LevelScene {
                             self.placed_units += 1;
 
                             if self.placed_units == 5 {
-                                self.state = LevelState::RoundStart;
+                                self.state = LevelState::CombineUnit;
                                 self.current_ticks = 0;
+                            }
+                        }
+                    } else if self.state == LevelState::CombineUnit {
+                        if let Some(hovered_tile) = self.hovered_tile {
+                            let board = gameworld.boards.get_mut(0).unwrap();
+                            let board_position = na::Point2::<i32>::new(
+                                hovered_tile.x as i32,
+                                hovered_tile.y as i32,
+                            );
+
+                            if let Some(_unit) = board.at_position(&board_position) {
+                                self.state = LevelState::RoundStart;
                             }
                         }
                     }
